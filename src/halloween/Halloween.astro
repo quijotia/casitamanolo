@@ -1,0 +1,71 @@
+---
+// Va en el <head> de todas las páginas. Decide si la casa va disfrazada y
+// lo apunta en <html data-tema="halloween" data-pagina="…"> antes de pintar
+// nada, para que no se vea ni un instante la web normal.
+//
+// El Client Router de Astro, al cambiar de página, copia los atributos de
+// <html> de la página nueva y borra los demás, así que el disfraz se vuelve
+// a poner en la página nueva antes de que entre (astro:before-swap) y, por
+// si acaso, justo después (astro:after-swap).
+import { temporada } from './config';
+import { idiomas, idiomaPorDefecto } from '../i18n/config';
+import './halloween.css';
+
+const prefijos = idiomas.filter((i) => i !== idiomaPorDefecto);
+const { desde, hasta } = temporada;
+---
+
+<link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet" />
+
+<script is:inline define:vars={{ desde, hasta, prefijos }}>
+    if (!window.__casaEncantada) {
+        window.__casaEncantada = true;
+
+        var enTemporada = function () {
+            var hoy = new Date();
+            var md = String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+            return desde <= hasta ? md >= desde && md <= hasta : md >= desde || md <= hasta;
+        };
+
+        // ?tema=halloween / ?tema=normal fuerzan el tema mientras dure la pestaña
+        var preferencia = function (url) {
+            var pedido = url.searchParams.get('tema');
+            try {
+                if (pedido === 'halloween' || pedido === 'normal') sessionStorage.setItem('casita-tema', pedido);
+                return sessionStorage.getItem('casita-tema');
+            } catch (e) {
+                return pedido;
+            }
+        };
+
+        var paginaDe = function (url) {
+            var trozos = url.pathname.split('/').filter(Boolean);
+            if (trozos.length && prefijos.indexOf(trozos[0]) !== -1) trozos.shift();
+            return trozos[0] || 'inicio';
+        };
+
+        var vestir = function (raiz, url) {
+            var pref = preferencia(url);
+            var activo = pref ? pref === 'halloween' : enTemporada();
+            if (activo) {
+                raiz.setAttribute('data-tema', 'halloween');
+                raiz.setAttribute('data-pagina', paginaDe(url));
+            } else {
+                raiz.removeAttribute('data-tema');
+                raiz.removeAttribute('data-pagina');
+            }
+        };
+
+        vestir(document.documentElement, new URL(location.href));
+        document.addEventListener('astro:before-swap', function (e) {
+            vestir(e.newDocument.documentElement, e.to);
+        });
+        document.addEventListener('astro:after-swap', function () {
+            vestir(document.documentElement, new URL(location.href));
+        });
+    }
+</script>
+
+<script>
+    import './sustos';
+</script>

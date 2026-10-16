@@ -1,0 +1,774 @@
+/* ==========================================================================
+   LA CASA ENCANTADA
+   Todo va colgado de html[data-tema="halloween"] (y de data-pagina para lo
+   que es de una sola página), así que fuera de fechas este archivo no toca
+   nada. Las reglas ganan a las de cada página por especificidad, no por
+   orden: no hace falta !important salvo donde se dice.
+   ========================================================================== */
+
+/* Las piezas del disfraz no existen fuera de Halloween */
+html:not([data-tema="halloween"]) .hw { display: none !important; }
+
+html[data-tema="halloween"] {
+    --hw-noche: #0F0B16;
+    --hw-noche-2: #1C1526;
+    --hw-noche-3: #2B2038;
+    --hw-hueso: #EFE6D2;
+    --hw-calabaza: #FF7A1A;
+    --hw-calabaza-clara: #FF9D4D;
+    --hw-vela: #FFC857;
+    --hw-veneno: #8BE04E;
+    --hw-morado: #9B6BDF;
+    --hw-sangre: #E0313B;
+
+    /* Las variables de la casa (Layout y portfolio) pasan a la noche */
+    --bg-color: var(--hw-noche-2);
+    --ink-color: var(--hw-hueso);
+    --accent-color: var(--hw-calabaza);
+    --text-color: var(--hw-hueso);
+
+    color-scheme: dark;
+}
+
+html[data-tema="halloween"] ::selection { background: var(--hw-calabaza); color: var(--hw-noche); }
+
+/* El fondo de las páginas que usan el Layout (portada, clientes, contacto) */
+html[data-tema="halloween"] body {
+    background-color: var(--hw-noche);
+    color: var(--hw-hueso);
+}
+
+/* ==========================================================================
+   1. EL AMBIENTE (todas las páginas)
+   ========================================================================== */
+.hw-ambiente {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* --- Relámpago: casi nunca, y muy breve --- */
+.hw-relampago {
+    position: absolute;
+    inset: 0;
+    background: #E9E2FF;
+    opacity: 0;
+    mix-blend-mode: soft-light;
+    animation: hwRelampago 23s linear infinite 6s;
+}
+@keyframes hwRelampago {
+    0%, 91%  { opacity: 0; }
+    91.4%    { opacity: 0.55; }
+    91.9%    { opacity: 0; }
+    92.5%    { opacity: 0.35; }
+    93.6%, 100% { opacity: 0; }
+}
+
+/* --- Telarañas en las esquinas de arriba --- */
+.hw-telarana {
+    position: absolute;
+    top: 0;
+    width: clamp(90px, 11vw, 150px);
+    aspect-ratio: 1;
+    opacity: 0.42;
+}
+.hw-telarana svg { display: block; width: 100%; height: 100%; }
+.hw-telarana path { fill: none; stroke: var(--hw-hueso); stroke-width: 0.9; stroke-linecap: round; }
+.hw-telarana-izq { left: 0; }
+.hw-telarana-der { right: 0; transform: scaleX(-1); }
+
+/* En el archivo el índice tapa la página: las telarañas van por encima */
+html[data-pagina="portfolio"] .hw-ambiente { z-index: 125; }
+
+/* En la galería y en el móvil, arriba a la derecha hay rótulos y botones:
+   la araña se queda en su telaraña sin bajar */
+html[data-pagina="galeria"] .hw-colgada { display: none; }
+@media (max-width: 680px) {
+    .hw-telarana { width: 76px; opacity: 0.32; }
+}
+
+/* --- La araña que baja de la telaraña de la derecha --- */
+.hw-colgada {
+    position: absolute;
+    top: 0;
+    right: clamp(34px, 4vw, 58px);
+    width: 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: hwColgada 9s ease-in-out infinite;
+    transform-origin: top center;
+}
+.hw-colgada-hilo { display: block; width: 1px; height: 70px; background: rgba(239, 230, 210, 0.55); }
+.hw-colgada svg { display: block; width: 26px; height: 26px; margin-top: -4px; }
+@media (max-width: 680px) { .hw-colgada { display: none; } }
+@keyframes hwColgada {
+    0%, 100% { transform: translateY(-46px); }
+    45%      { transform: translateY(22px); }
+    52%      { transform: translateY(16px) rotate(4deg); }
+    60%      { transform: translateY(22px) rotate(-3deg); }
+}
+
+/* La misma araña, en el dibujo y suelta */
+.hw-patas { fill: none; stroke: var(--hw-hueso); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.hw-arana-cuerpo { fill: #07050B; stroke: var(--hw-hueso); stroke-width: 1; }
+.hw-ojillo { fill: var(--hw-sangre); }
+
+/* --- Murciélagos que cruzan de vez en cuando --- */
+.hw-vuelo { position: absolute; left: 0; width: 44px; }
+.hw-aleta { animation: hwAleteo 0.32s ease-in-out infinite alternate; transform-origin: center; }
+.hw-aleta svg { display: block; width: 100%; height: auto; }
+.hw-aleta path { fill: #07050B; stroke: rgba(239, 230, 210, 0.55); stroke-width: 0.7; }
+@keyframes hwAleteo {
+    from { transform: scaleY(1); }
+    to   { transform: scaleY(0.35) translateY(2px); }
+}
+.hw-vuelo-1 { top: 16vh; animation: hwCruza 17s linear infinite 2s both; }
+.hw-vuelo-2 { top: 28vh; width: 30px; animation: hwCruzaVuelta 23s linear infinite 9s both; }
+.hw-vuelo-3 { top: 9vh;  width: 24px; animation: hwCruza 29s linear infinite 15s both; }
+.hw-vuelo-2 .hw-aleta { animation-duration: 0.26s; }
+.hw-vuelo-3 .hw-aleta { animation-duration: 0.22s; }
+@keyframes hwCruza {
+    0%   { transform: translate(-80px, 0); }
+    10%  { transform: translate(28vw, -6vh); }
+    20%  { transform: translate(56vw, 4vh); }
+    30%  { transform: translate(84vw, -3vh); }
+    36%, 100% { transform: translate(110vw, -9vh); }
+}
+@keyframes hwCruzaVuelta {
+    0%   { transform: translate(110vw, 0) scaleX(-1); }
+    12%  { transform: translate(70vw, 5vh) scaleX(-1); }
+    24%  { transform: translate(32vw, -4vh) scaleX(-1); }
+    34%, 100% { transform: translate(-80px, 3vh) scaleX(-1); }
+}
+
+/* --- La bandada que sale de golpe --- */
+.hw-bandada-grande { position: fixed; inset: 0; z-index: 9000; pointer-events: none; }
+.hw-bandada-uno {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--tam);
+    margin-left: calc(var(--tam) / -2);
+    opacity: 0;
+    animation: hwEstampida 2.1s cubic-bezier(0.3, 0.5, 0.6, 1) forwards var(--retraso);
+}
+@keyframes hwEstampida {
+    0%   { transform: translate(0, 0) scale(0.2); opacity: 0; }
+    12%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.2); opacity: 0; }
+}
+
+/* ==========================================================================
+   2. PIEZAS COMUNES: calabazas y velas
+   ========================================================================== */
+.hw-gajo { fill: var(--hw-calabaza); stroke: #7A2E00; stroke-width: 2; }
+.hw-tallo { fill: none; stroke: #5E8A34; stroke-width: 3.2; stroke-linecap: round; }
+.hw-cara { fill: var(--hw-vela); animation: hwTitila 2.6s ease-in-out infinite; filter: drop-shadow(0 0 3px #FFB347); }
+.hw-calabaza-luz { fill: url(#hw-luz-vela); animation: hwRespira 2.6s ease-in-out infinite; }
+@keyframes hwTitila {
+    0%, 100% { opacity: 1; }
+    20%      { opacity: 0.78; }
+    23%      { opacity: 0.95; }
+    61%      { opacity: 0.72; }
+    64%      { opacity: 1; }
+}
+@keyframes hwRespira {
+    0%, 100% { opacity: 0.7; }
+    50%      { opacity: 1; }
+}
+
+.hw-vela { display: block; overflow: visible; }
+.hw-vela-halo { fill: rgba(255, 180, 70, 0.22); filter: blur(6px); animation: hwRespira 1.9s ease-in-out infinite; }
+.hw-llama { transform-box: fill-box; transform-origin: 50% 100%; animation: hwLlama 1.4s ease-in-out infinite; }
+@keyframes hwLlama {
+    0%, 100% { transform: scale(1, 1) rotate(-2deg); }
+    30%      { transform: scale(0.92, 1.08) rotate(2deg); }
+    60%      { transform: scale(1.04, 0.94) rotate(-1deg); }
+}
+
+/* Las sueltas (fuera del dibujo de la portada) llevan su propio halo */
+.hw-calabaza-suelta { display: block; overflow: visible; }
+.hw-calabaza-suelta .hw-calabaza-luz { fill: rgba(255, 140, 40, 0.28); filter: blur(8px); }
+
+.hw-hoja { position: absolute; width: 26px; height: 26px; transform: rotate(var(--giro)); filter: drop-shadow(2px 4px 3px rgba(0,0,0,0.45)); }
+
+/* ==========================================================================
+   3. EL SELECTOR DE IDIOMA (todas las páginas)
+   ========================================================================== */
+html[data-tema="halloween"] .idioma {
+    background: var(--hw-noche-2);
+    border-color: rgba(239, 230, 210, 0.45);
+    color: var(--hw-hueso);
+}
+html[data-tema="halloween"] .idioma--puesto {
+    background: var(--hw-calabaza);
+    border-color: var(--hw-calabaza);
+    color: var(--hw-noche);
+}
+html[data-tema="halloween"] .idioma:not(.idioma--puesto):hover,
+html[data-tema="halloween"] .idioma:not(.idioma--puesto):focus-visible {
+    background: var(--hw-hueso);
+    border-color: var(--hw-hueso);
+    color: var(--hw-noche);
+}
+html[data-tema="halloween"] .idioma:focus-visible { outline-color: var(--hw-calabaza); }
+
+/* ==========================================================================
+   4. LA PORTADA: la casa encantada
+   ========================================================================== */
+html[data-tema="halloween"][data-pagina="inicio"] body {
+    background:
+        radial-gradient(ellipse 70% 45% at 50% 100%, rgba(255, 122, 26, 0.16), transparent 70%),
+        radial-gradient(ellipse 55% 50% at 8% 8%, rgba(155, 107, 223, 0.18), transparent 70%),
+        linear-gradient(180deg, #0A0710 0%, #150F1F 55%, #221729 100%);
+    background-attachment: fixed;
+}
+
+/* --- El ático, oscuro de verdad (antes era del color de la tinta) --- */
+html[data-tema="halloween"] #roof-clients-link > polygon { fill: #07050B; }
+html[data-tema="halloween"] .attic-text { fill: var(--hw-vela); filter: drop-shadow(0 0 4px rgba(255, 200, 87, 0.6)); }
+
+/* El tejado se levanta más y con un respingo */
+html[data-tema="halloween"]:root #roof-clients-link:hover .interactive-roof,
+html[data-tema="halloween"]:root #roof-clients-link:focus-visible .interactive-roof,
+html[data-tema="halloween"]:root #roof-clients-link.hw-abierto .interactive-roof {
+    transform: translateY(-92px) rotate(-9deg) scale(1.05);
+}
+html[data-tema="halloween"] #roof-clients-link.hw-abierto .attic-text { opacity: 1; transform: translateY(0); }
+html[data-tema="halloween"] #roof-clients-link.hw-abierto .hint { transform: translateY(-62px); }
+
+/* --- Ojos del ático --- */
+.hw-ojos-atico ellipse {
+    fill: var(--hw-vela);
+    filter: drop-shadow(0 0 3px var(--hw-calabaza));
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hwParpadeo 3.4s infinite;
+}
+@keyframes hwParpadeo {
+    0%, 44%, 50%, 100% { transform: scaleY(1); }
+    47%      { transform: scaleY(0.1); }
+}
+
+/* --- Murciélagos que salen del ático --- */
+.hw-sale {
+    fill: #07050B;
+    stroke: rgba(239, 230, 210, 0.7);
+    stroke-width: 0.8;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+#roof-clients-link:hover .hw-sale,
+#roof-clients-link:focus-visible .hw-sale,
+#roof-clients-link.hw-abierto .hw-sale { animation: var(--vuelo) 1.35s cubic-bezier(0.25, 0.7, 0.4, 1) forwards; }
+.hw-sale-1 { --vuelo: hwSale1; }
+.hw-sale-2 { --vuelo: hwSale2; animation-delay: 0.08s !important; }
+.hw-sale-3 { --vuelo: hwSale3; animation-delay: 0.16s !important; }
+.hw-sale-4 { --vuelo: hwSale4; animation-delay: 0.24s !important; }
+@keyframes hwSale1 {
+    0%   { transform: translate(0, 0) scale(0.3); opacity: 0; }
+    15%  { opacity: 1; }
+    35%  { transform: translate(-50px, -60px) scale(0.9, 0.4); }
+    55%  { transform: translate(-100px, -95px) scale(1, 1); }
+    100% { transform: translate(-190px, -150px) scale(0.8, 0.5); opacity: 0; }
+}
+@keyframes hwSale2 {
+    0%   { transform: translate(0, 0) scale(0.3); opacity: 0; }
+    15%  { opacity: 1; }
+    40%  { transform: translate(10px, -90px) scale(1.1, 0.5); }
+    65%  { transform: translate(-10px, -140px) scale(1.1, 1); }
+    100% { transform: translate(30px, -200px) scale(0.9, 0.4); opacity: 0; }
+}
+@keyframes hwSale3 {
+    0%   { transform: translate(0, 0) scale(0.3); opacity: 0; }
+    15%  { opacity: 1; }
+    35%  { transform: translate(60px, -55px) scale(0.9, 0.4); }
+    60%  { transform: translate(120px, -80px) scale(1, 1); }
+    100% { transform: translate(220px, -130px) scale(0.8, 0.5); opacity: 0; }
+}
+@keyframes hwSale4 {
+    0%   { transform: translate(0, 0) scale(0.2); opacity: 0; }
+    20%  { opacity: 1; }
+    50%  { transform: translate(-30px, -120px) scale(0.7, 0.3); }
+    100% { transform: translate(-70px, -230px) scale(0.6, 0.6); opacity: 0; }
+}
+
+/* --- Cielo: estrellas, luna y murciélagos lejanos --- */
+.hw-estrellas circle {
+    fill: var(--hw-hueso);
+    opacity: 0.7;
+    animation: hwBrilla 3.2s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.73s);
+}
+@keyframes hwBrilla {
+    0%, 100% { opacity: 0.75; }
+    50%      { opacity: 0.2; }
+}
+
+.hw-luna-sitio { transform: translate(96px, 84px); }
+.hw-luna { cursor: pointer; outline: none; transform-box: fill-box; transform-origin: center; transition: transform 0.4s var(--ease-spring); -webkit-tap-highlight-color: transparent; }
+.hw-luna:hover, .hw-luna:focus-visible { transform: scale(1.07); }
+.hw-luna:focus-visible .hw-luna-disco { stroke: var(--hw-calabaza); stroke-width: 3; stroke-dasharray: 6 5; }
+.hw-luna-disco { fill: #F3E7C4; }
+.hw-luna-crater { fill: #DCCDA5; }
+.hw-luna-halo { animation: hwRespira 5s ease-in-out infinite; }
+.hw-luna.hw-aullando { animation: hwTiembla 0.5s ease-in-out 3; }
+@keyframes hwTiembla {
+    0%, 100% { transform: rotate(0) scale(1.07); }
+    25%      { transform: rotate(-5deg) scale(1.1); }
+    75%      { transform: rotate(5deg) scale(1.1); }
+}
+
+.hw-lejano { fill: #07050B; opacity: 0; }
+.hw-lejano-1 { animation: hwLejano1 13s linear infinite 1s; }
+.hw-lejano-2 { animation: hwLejano1 13s linear infinite 1.5s; }
+.hw-lejano-3 { animation: hwLejano2 19s linear infinite 7s; }
+@keyframes hwLejano1 {
+    0%   { transform: translate(-30px, 110px) scale(0.38); opacity: 0; }
+    3%   { opacity: 1; }
+    16%  { transform: translate(90px, 70px) scale(0.32, 0.12); }
+    30%  { transform: translate(200px, 40px) scale(0.36); opacity: 1; }
+    34%, 100% { transform: translate(240px, 20px) scale(0.3); opacity: 0; }
+}
+@keyframes hwLejano2 {
+    0%   { transform: translate(180px, 30px) scale(0.3); opacity: 0; }
+    3%   { opacity: 1; }
+    15%  { transform: translate(100px, 80px) scale(0.28, 0.1); }
+    28%  { transform: translate(-10px, 60px) scale(0.3); opacity: 1; }
+    32%, 100% { transform: translate(-40px, 50px) scale(0.26); opacity: 0; }
+}
+
+/* --- Tumbas en los dos extremos del suelo --- */
+.hw-tumba { fill: var(--hw-noche-3); stroke: var(--hw-hueso); stroke-width: 3; stroke-linejoin: round; }
+.hw-tumba-texto { font-family: 'Space Mono', monospace; font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-anchor: middle; fill: var(--hw-hueso); opacity: 0.8; }
+.hw-tumba-raya { fill: none; stroke: var(--hw-hueso); stroke-width: 2; stroke-linecap: round; opacity: 0.7; }
+.hw-hierba { fill: none; stroke: #6E9A3E; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* --- La araña del alero --- */
+.hw-hilo { stroke: rgba(239, 230, 210, 0.55); stroke-width: 1; transform-box: view-box; transform-origin: 548px 234px; animation: hwHilo 5s ease-in-out infinite; }
+.hw-arana-baja { animation: hwBaja 5s ease-in-out infinite; }
+@keyframes hwHilo {
+    0%, 100% { transform: scaleY(1); }
+    50%      { transform: scaleY(1.5); }
+}
+@keyframes hwBaja {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(21px); }
+}
+
+/* --- La puerta: se abre más y dentro hay alguien --- */
+.hw-hueco { fill: #050308; }
+.hw-hueco-luz { opacity: 0.8; }
+.hw-ojos-puerta ellipse {
+    fill: var(--hw-veneno);
+    filter: drop-shadow(0 0 3px var(--hw-veneno));
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hwParpadeo 2.7s infinite 0.4s;
+}
+html[data-tema="halloween"]:root #door-group:hover .door-anim,
+html[data-tema="halloween"]:root #door-group:focus-visible .door-anim { transform: scaleX(0.42) skewY(6deg); }
+html[data-tema="halloween"]:root #door-group:hover .door-panel,
+html[data-tema="halloween"]:root #door-group:focus-visible .door-panel { fill: var(--hw-noche-3); }
+html[data-tema="halloween"] .door-anim { transition-duration: 0.7s; }
+
+/* --- La ventana: luz de vela y un fantasma que pasa --- */
+html[data-tema="halloween"] .window-glass { fill: #FFAF45; animation: hwVentana 3.8s ease-in-out infinite; }
+html[data-tema="halloween"]:root #window-group:hover .window-glass,
+html[data-tema="halloween"]:root #window-group:focus-visible .window-glass { fill: #FFD27A; }
+@keyframes hwVentana {
+    0%, 100% { fill: #FFAF45; }
+    30%      { fill: #FF9A30; }
+    34%      { fill: #FFC266; }
+    70%      { fill: #FFA43A; }
+}
+.hw-fantasma { fill: var(--hw-noche-2); opacity: 0.88; }
+.hw-fantasma-ojo { fill: #FFE7A8; }
+.hw-fantasma-ventana { transform: translateX(-40px); }
+#window-group:hover .hw-fantasma-ventana,
+#window-group:focus-visible .hw-fantasma-ventana { animation: hwFantasmaPasa 1.9s ease-in-out forwards; }
+@keyframes hwFantasmaPasa {
+    0%   { transform: translate(-40px, 4px); }
+    45%  { transform: translate(-2px, -2px); }
+    60%  { transform: translate(2px, -3px); }
+    100% { transform: translate(42px, 4px); }
+}
+
+/* --- La botella: pócima verde con calavera --- */
+html[data-tema="halloween"] .bottle-label { fill: rgba(139, 224, 78, 0.16); }
+html[data-tema="halloween"] .wine-liquid { fill: var(--hw-veneno); filter: drop-shadow(0 0 4px rgba(139, 224, 78, 0.7)); }
+html[data-tema="halloween"] .wine-stream { stroke: var(--hw-veneno); }
+.hw-calavera { fill: var(--hw-hueso); }
+.hw-calavera-hueco { fill: var(--hw-noche-2); }
+.hw-calavera-huesos { fill: none; stroke: var(--hw-hueso); stroke-width: 2.4; stroke-linecap: round; }
+.hw-burbujas circle { fill: none; stroke: var(--hw-veneno); stroke-width: 1.4; opacity: 0; }
+#wine-group:hover .hw-burbujas circle,
+#wine-group:focus-visible .hw-burbujas circle { animation: hwBurbuja 1.3s ease-out infinite 0.9s; }
+#wine-group:hover .hw-burbujas circle:nth-child(2),
+#wine-group:focus-visible .hw-burbujas circle:nth-child(2) { animation-delay: 1.25s; }
+#wine-group:hover .hw-burbujas circle:nth-child(3),
+#wine-group:focus-visible .hw-burbujas circle:nth-child(3) { animation-delay: 1.55s; }
+@keyframes hwBurbuja {
+    0%   { transform: translateY(0); opacity: 0; }
+    20%  { opacity: 0.9; }
+    100% { transform: translateY(-38px); opacity: 0; }
+}
+
+/* --- Vinilos negros de verdad, con etiquetas de Halloween --- */
+html[data-tema="halloween"] .vinyls circle[r="18"] { fill: #07050B; }
+html[data-tema="halloween"] .vinyls g:first-child circle[r="6"] { fill: var(--hw-morado); }
+
+/* --- El gato del taburete --- */
+.hw-gato-silueta { fill: #07050B; stroke: rgba(239, 230, 210, 0.85); stroke-width: 1.5; stroke-linejoin: round; }
+.hw-gato-cola { fill: none; stroke: rgba(239, 230, 210, 0.85); stroke-width: 2.6; stroke-linecap: round; }
+.hw-gato-ojo { fill: var(--hw-veneno); filter: drop-shadow(0 0 2px var(--hw-veneno)); transform-box: fill-box; transform-origin: center; animation: hwParpadeo 4.1s infinite 1.2s; }
+.hw-bigotes { stroke: rgba(239, 230, 210, 0.6); stroke-width: 0.8; stroke-linecap: round; }
+.hw-gato-cuerpo { transform-box: fill-box; transform-origin: 50% 100%; }
+#stool-group:hover .hw-gato-cuerpo,
+#stool-group:focus-visible .hw-gato-cuerpo { animation: hwGatoSalta 0.75s cubic-bezier(0.3, 1.6, 0.5, 1) forwards; }
+#stool-group:hover .hw-gato-ojo,
+#stool-group:focus-visible .hw-gato-ojo { animation: none; transform: scale(1.5); }
+@keyframes hwGatoSalta {
+    0%   { transform: translateY(0) scale(1, 1); }
+    25%  { transform: translateY(2px) scale(1.12, 0.86); }
+    60%  { transform: translateY(-20px) scale(0.9, 1.15); }
+    100% { transform: translateY(-14px) scale(1.06, 1.08); }
+}
+
+/* --- Niebla a ras de suelo --- */
+.hw-niebla { pointer-events: none; }
+.hw-bruma { fill: #CFC3E8; opacity: 0.13; }
+.hw-bruma-1 { animation: hwBruma 11s ease-in-out infinite alternate; }
+.hw-bruma-2 { animation: hwBruma 14s ease-in-out infinite alternate-reverse; }
+.hw-bruma-3 { animation: hwBruma 9s ease-in-out infinite alternate; }
+@keyframes hwBruma {
+    from { transform: translateX(-28px); }
+    to   { transform: translateX(28px); }
+}
+
+/* --- Las notas de la chimenea, de fuego fatuo --- */
+html[data-tema="halloween"] .humo { filter: drop-shadow(0 0 4px rgba(255, 122, 26, 0.8)); }
+html[data-tema="halloween"] .nota-cabeza { fill: var(--hw-calabaza-clara); }
+html[data-tema="halloween"] .nota-trazo,
+html[data-tema="halloween"] .nota-barra { stroke: var(--hw-calabaza-clara); }
+
+/* Al señalar una zona, el atrezo de Halloween también se aparta */
+.hw-cielo, .hw-tumbas, .hw-calabaza-porche, .hw-arana-sitio, .hw-niebla { transition: opacity 0.35s var(--ease-out); }
+body:not(.video-mode) .svg-layer:has(.item:hover) :is(.hw-cielo, .hw-tumbas, .hw-calabaza-porche, .hw-arana-sitio),
+body:not(.video-mode) .svg-layer:has(.item:focus-visible) :is(.hw-cielo, .hw-tumbas, .hw-calabaza-porche, .hw-arana-sitio) { opacity: 0.45; }
+body.video-mode :is(.hw-cielo, .hw-tumbas, .hw-calabaza-porche, .hw-arana-sitio, .hw-niebla) { opacity: 0; }
+
+/* --- Rótulos, estado y marca --- */
+@media (hover: hover) and (min-width: 561px) {
+    html[data-tema="halloween"] .hint-bg { opacity: 0.6; }
+    html[data-tema="halloween"] .hint-text { opacity: 0.85; }
+}
+html[data-tema="halloween"]:root .item:hover .hint-text,
+html[data-tema="halloween"]:root .item:focus-visible .hint-text { fill: var(--hw-noche); }
+html[data-tema="halloween"] .status { border-color: rgba(239, 230, 210, 0.2); }
+html[data-tema="halloween"] .status.active { background: var(--hw-calabaza); border-color: var(--hw-calabaza); color: var(--hw-noche); }
+html[data-tema="halloween"] .toast { background: var(--hw-calabaza); color: var(--hw-noche); }
+html[data-tema="halloween"][data-pagina="inicio"] .branding h1 {
+    text-shadow: 0 0 22px rgba(255, 122, 26, 0.45), 0 2px 0 #07050B;
+}
+html[data-tema="halloween"][data-pagina="inicio"] .tagline { opacity: 0.7; }
+
+/* El sello de la edición, que además enciende o apaga el sonido */
+.hw-sello {
+    pointer-events: auto;
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: 10px;
+    margin: 0 auto 0.9rem;
+    padding: 6px 12px 6px 16px;
+    min-height: 36px;
+    border: 1.5px dashed rgba(255, 122, 26, 0.7);
+    border-radius: 999px;
+    background: rgba(255, 122, 26, 0.08);
+    color: var(--hw-calabaza-clara);
+    font-family: 'Creepster', 'Space Mono', cursive;
+    font-size: 1.05rem;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s var(--ease-spring);
+}
+.hw-sello:hover, .hw-sello:focus-visible { background: var(--hw-calabaza); color: var(--hw-noche); transform: rotate(-2deg) scale(1.04); }
+.hw-sello:focus-visible { outline: 2px solid var(--hw-hueso); outline-offset: 3px; }
+.hw-sello svg { width: 18px; height: 18px; fill: currentColor; }
+.hw-sello .hw-onda-sonido { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.hw-sello[aria-pressed="false"] .hw-sello-texto { opacity: 0.75; }
+
+/* --- Móvil: la luna entra en el recorte, las tumbas se quedan fuera --- */
+@media (max-width: 560px) {
+    .hw-luna-sitio { transform: translate(432px, 76px) scale(0.68); }
+    .hw-tumbas { display: none; }
+    .hw-calabaza-porche { transform: translate(-146px, 3px) scale(0.86); transform-box: fill-box; transform-origin: center; }
+    .hw-calabaza-botella { transform: translate(128px, 0); }
+    .hw-sello { font-size: 0.9rem; margin-bottom: 0.6rem; min-height: 32px; padding: 4px 10px 4px 14px; }
+    html[data-tema="halloween"] #roof-clients-link.hw-abierto .hint { transform: translate(40px, 125px); opacity: 0; }
+}
+@media (max-height: 520px) and (min-width: 561px) {
+    .hw-sello { display: none; }
+}
+
+/* ==========================================================================
+   5. EL SUSTO DE LA PUERTA
+   ========================================================================== */
+.hw-susto {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 45%, rgba(20, 8, 24, 0.55), rgba(5, 2, 8, 0.96) 70%);
+    animation: hwSustoFondo 1.05s ease-out forwards;
+    pointer-events: auto;
+    overflow: hidden;
+}
+.hw-susto-fantasma {
+    width: min(62vw, 58vh);
+    animation: hwSustoSalta 1.05s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+    filter: drop-shadow(0 0 40px rgba(239, 230, 210, 0.45));
+}
+.hw-susto-fantasma svg { display: block; width: 100%; height: auto; }
+.hw-susto-cuerpo { fill: #F4ECDC; }
+.hw-susto-hueco { fill: #0F0B16; }
+.hw-susto-texto {
+    margin: -2vh 0 0;
+    font-family: 'Creepster', 'Space Mono', cursive;
+    font-size: clamp(3rem, 14vw, 9rem);
+    line-height: 1;
+    letter-spacing: 0.06em;
+    color: var(--hw-calabaza);
+    text-shadow: 0 0 30px rgba(255, 122, 26, 0.8), 0 6px 0 #5A1F00;
+    animation: hwSustoTexto 1.05s ease-out forwards;
+}
+.hw-susto-sale { animation: hwSustoVete 0.38s ease-in forwards; }
+@keyframes hwSustoFondo {
+    0%   { opacity: 0; }
+    8%   { opacity: 1; background-color: rgba(255, 255, 255, 0.4); }
+    14%  { background-color: transparent; }
+    100% { opacity: 1; }
+}
+@keyframes hwSustoSalta {
+    0%   { transform: translateY(30vh) scale(0.08) rotate(-12deg); }
+    35%  { transform: translateY(0) scale(1.15) rotate(4deg); }
+    45%  { transform: translate(-6px, 2px) scale(1.12) rotate(-3deg); }
+    55%  { transform: translate(6px, -2px) scale(1.14) rotate(3deg); }
+    65%  { transform: translate(-4px, 1px) scale(1.12) rotate(-2deg); }
+    100% { transform: translate(0, 0) scale(1.2) rotate(0); }
+}
+@keyframes hwSustoTexto {
+    0%, 25% { transform: scale(0.3); opacity: 0; }
+    40%     { transform: scale(1.15); opacity: 1; }
+    100%    { transform: scale(1); opacity: 1; }
+}
+@keyframes hwSustoVete {
+    to { opacity: 0; transform: scale(1.4); }
+}
+
+/* ==========================================================================
+   6. LA CARTA (servicios): pizarra de Halloween con vela en la repisa
+   ========================================================================== */
+html[data-tema="halloween"][data-pagina="servicios"] {
+    --ink-red: var(--hw-calabaza);
+    --chalk-pink: var(--hw-calabaza-clara);
+    --wood-dark: #1B110E;
+    --wood-light: #36221A;
+    --chalkboard: #1E201F;
+}
+html[data-tema="halloween"][data-pagina="servicios"] body {
+    background-color: var(--hw-noche);
+    background-image:
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(255, 122, 26, 0.14), transparent 70%),
+        radial-gradient(circle at 50% 0%, rgba(155, 107, 223, 0.12), transparent 55%);
+}
+html[data-tema="halloween"][data-pagina="servicios"] .course-title { text-shadow: 0 0 6px rgba(255, 140, 50, 0.55); }
+html[data-tema="halloween"][data-pagina="servicios"] .price-link:hover { box-shadow: inset 0 0 10px rgba(255, 140, 50, 0.25); text-shadow: 0 0 5px rgba(255, 140, 50, 0.6); }
+
+/* La vela, encima de la repisa a la derecha de la tiza */
+html[data-tema="halloween"] .chalk-ledge .hw-vela { position: absolute; right: 12px; bottom: 14px; width: 22px; height: 50px; }
+
+/* Garabatos de tiza: un murciélago y una calabaza a los lados del título */
+html[data-tema="halloween"][data-pagina="servicios"] .menu-header h1::before,
+html[data-tema="halloween"][data-pagina="servicios"] .menu-header h1::after {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 1.1em;
+    height: 1.1em;
+    margin: 0 0.3em;
+    background: no-repeat center / contain;
+    opacity: 0.85;
+}
+html[data-tema="halloween"][data-pagina="servicios"] .menu-header h1::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-22 -12 44 20'%3E%3Cpath d='M0,-3 C2,-8 4,-8 5,-5 C9,-10 15,-10 20,-6 C17,-5 16,-2 17,1 C14,-1 11,0 10,3 C8,1 6,1 4,3 C3,2 1,2 0,4 C-1,2 -3,2 -4,3 C-6,1 -8,1 -10,3 C-11,0 -14,-1 -17,1 C-16,-2 -17,-5 -20,-6 C-15,-10 -9,-10 -5,-5 C-4,-8 -2,-8 0,-3 Z' fill='none' stroke='%23F4F1EC' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E");
+    transform: rotate(-12deg);
+}
+html[data-tema="halloween"][data-pagina="servicios"] .menu-header h1::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-20 -24 40 42'%3E%3Cg fill='none' stroke='%23FF9D4D' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M -1,-14 Q 0,-20 5,-21'/%3E%3Cellipse cx='-7' cy='0' rx='9' ry='13'/%3E%3Cellipse cx='7' cy='0' rx='9' ry='13'/%3E%3Cpath d='M -8,-4 L -4,-4 L -6,-8 Z M 4,-4 L 8,-4 L 6,-8 Z M -8,4 L -4,7 L 0,5 L 4,7 L 8,4'/%3E%3C/g%3E%3C/svg%3E");
+    transform: rotate(10deg);
+}
+/* «¡Bu!» escrito con tiza en la esquina de la pizarra */
+@media (max-width: 680px) {
+    html[data-tema="halloween"][data-pagina="servicios"] .menu-header h1::before,
+    html[data-tema="halloween"][data-pagina="servicios"] .menu-header h1::after { width: 0.8em; height: 0.8em; margin: 0 0.12em; }
+    .hw-tiza-bu { display: none; }
+}
+.hw-tiza-bu {
+    position: absolute;
+    top: -14px;
+    right: -4px;
+    font-family: 'Architects Daughter', cursive;
+    font-size: 1rem;
+    color: var(--chalk-pink);
+    transform: rotate(14deg);
+    opacity: 0.8;
+}
+
+/* ==========================================================================
+   7. EL ARCHIVO (portfolio): el salón de escucha a la luz de las velas
+   ========================================================================== */
+html[data-tema="halloween"][data-pagina="portfolio"] body {
+    background-color: var(--hw-noche);
+}
+html[data-tema="halloween"][data-pagina="portfolio"] .indice {
+    background:
+        radial-gradient(ellipse 60% 50% at 50% 60%, rgba(255, 122, 26, 0.12), transparent 70%),
+        rgba(10, 6, 14, 0.92);
+}
+html[data-tema="halloween"][data-pagina="portfolio"] .indice-cabecera h2 {
+    font-family: 'Creepster', 'Space Mono', cursive;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    color: var(--hw-calabaza);
+    text-shadow: 0 0 18px rgba(255, 122, 26, 0.5);
+}
+/* Velas y calabaza encima del mueble */
+.hw-mesa-mueble { inset: auto 0 100% 0; height: 0; z-index: 2; }
+.hw-mesa-mueble .hw-sitio-velas { left: 22px; bottom: -4px; display: flex; align-items: flex-end; gap: 3px; }
+.hw-mesa-mueble .hw-sitio-velas .hw-vela { width: 24px; height: 56px; }
+.hw-mesa-mueble .hw-sitio-velas .hw-vela + .hw-vela { width: 18px; height: 42px; }
+.hw-mesa-mueble .hw-sitio-calabaza { right: 26px; bottom: -6px; width: 58px; }
+@media (max-width: 680px) {
+    .hw-mesa-mueble .hw-sitio-velas .hw-vela { width: 18px; height: 42px; }
+    .hw-mesa-mueble .hw-sitio-velas .hw-vela + .hw-vela { width: 14px; height: 32px; }
+    .hw-mesa-mueble .hw-sitio-calabaza { width: 44px; }
+}
+html[data-tema="halloween"][data-pagina="portfolio"] .caja:hover .caja-nombre,
+html[data-tema="halloween"][data-pagina="portfolio"] .caja:focus-visible .caja-nombre { color: #B34700; }
+
+/* ==========================================================================
+   8. CLIENTES: la barra de noche, con velas y calabaza
+   ========================================================================== */
+html[data-tema="halloween"][data-pagina="clientes"] .bar-counter {
+    position: relative;
+    background:
+        radial-gradient(circle at 92% 92%, rgba(255, 150, 50, 0.2), transparent 28%),
+        radial-gradient(circle at 6% 90%, rgba(255, 180, 70, 0.16), transparent 24%),
+        repeating-linear-gradient(90deg, #00000018 0 1px, transparent 1px 44px),
+        #24151F;
+}
+html[data-tema="halloween"][data-pagina="clientes"] .coaster-heading h1 { color: var(--hw-calabaza-clara); text-shadow: 0 0 16px rgba(255, 122, 26, 0.35); }
+html[data-tema="halloween"][data-pagina="clientes"] .coaster-back { background: var(--hw-calabaza); color: var(--hw-noche); }
+html[data-tema="halloween"][data-pagina="clientes"] .tidy-button { border-color: rgba(255, 157, 77, 0.6); }
+html[data-tema="halloween"][data-pagina="clientes"] .tidy-button:hover { background: var(--hw-calabaza); color: var(--hw-noche); }
+html[data-tema="halloween"][data-pagina="clientes"] .bar-counter button:focus-visible,
+html[data-tema="halloween"][data-pagina="clientes"] .bar-counter a:focus-visible { outline-color: var(--hw-calabaza); }
+
+.hw-mesa { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.hw-sitio { position: absolute; }
+.hw-mesa-barra .hw-sitio-velas { left: 2%; bottom: 3%; display: flex; align-items: flex-end; gap: 4px; }
+.hw-mesa-barra .hw-sitio-velas .hw-vela { width: 30px; height: 70px; }
+.hw-mesa-barra .hw-sitio-velas .hw-vela + .hw-vela { width: 22px; height: 52px; }
+.hw-mesa-barra .hw-sitio-calabaza { right: 3%; bottom: 3%; width: 84px; }
+@media (max-width: 680px) {
+    .hw-mesa-barra .hw-sitio-velas { left: auto; right: 96px; }
+    .hw-mesa-barra .hw-sitio-calabaza { width: 64px; }
+}
+
+/* ==========================================================================
+   9. GALERÍA: las mesas, con vela, calabaza y hojas caídas
+   ========================================================================== */
+html[data-tema="halloween"][data-pagina="galeria"] {
+    --ink-red: var(--hw-calabaza);
+}
+html[data-tema="halloween"][data-pagina="galeria"] body {
+    background: radial-gradient(ellipse 70% 60% at 50% 45%, #1F1428, #08050C 80%);
+}
+.bar-table .hw-mesa { z-index: 4; border-radius: inherit; overflow: hidden; }
+.bar-table .hw-mesa::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 88% 14%, rgba(255, 170, 60, 0.26), transparent 30%);
+    animation: hwRespira 2.4s ease-in-out infinite;
+}
+.bar-table .hw-sitio-vela { top: 6%; right: 9%; }
+.bar-table .hw-sitio-vela .hw-vela { width: 34px; height: 78px; }
+.bar-table .hw-sitio-calabaza { bottom: 8%; left: 7%; width: 78px; }
+.bar-table .hw-sitio-hojas { left: 38%; bottom: 5%; width: 120px; height: 40px; }
+.bar-table .hw-hoja:nth-child(1) { left: 0; top: 6px; }
+.bar-table .hw-hoja:nth-child(2) { left: 46px; top: 0; width: 20px; height: 20px; }
+.bar-table .hw-hoja:nth-child(3) { left: 84px; top: 12px; }
+@media (max-width: 680px) {
+    .bar-table .hw-sitio-vela .hw-vela { width: 24px; height: 56px; }
+    .bar-table .hw-sitio-calabaza { width: 54px; }
+    .bar-table .hw-sitio-hojas { display: none; }
+}
+
+/* ==========================================================================
+   10. EL TICKET (contacto): papel viejo, sello naranja y un susto de regalo
+   ========================================================================== */
+html[data-tema="halloween"][data-pagina="contacto"] {
+    --ink-dark: #150F1C;
+    --paper-light: #F1E6CF;
+    --accent-red: #E8590C;
+}
+html[data-tema="halloween"][data-pagina="contacto"] body {
+    background:
+        radial-gradient(ellipse 50% 45% at 50% 35%, rgba(255, 122, 26, 0.12), transparent 70%),
+        var(--hw-noche);
+}
+html[data-tema="halloween"][data-pagina="contacto"] .btn-volver { background: rgba(21, 15, 28, 0.92); }
+html[data-tema="halloween"][data-pagina="contacto"] .ticket-header h1::after {
+    content: "";
+    display: block;
+    width: 46px;
+    height: 20px;
+    margin: 6px auto 2px;
+    background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-21 -11 42 16'%3E%3Cpath d='M0,-3 C2,-8 4,-8 5,-5 C9,-10 15,-10 20,-6 C17,-5 16,-2 17,1 C14,-1 11,0 10,3 C8,1 6,1 4,3 C3,2 1,2 0,4 C-1,2 -3,2 -4,3 C-6,1 -8,1 -10,3 C-11,0 -14,-1 -17,1 C-16,-2 -17,-5 -20,-6 C-15,-10 -9,-10 -5,-5 C-4,-8 -2,-8 0,-3 Z' fill='%23150F1C'/%3E%3C/svg%3E");
+}
+.hw-ticket-susto {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    font-weight: 700;
+    color: var(--accent-red);
+}
+
+/* ==========================================================================
+   11. MOVIMIENTO REDUCIDO: el disfraz se queda, el movimiento no
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .hw-ambiente .hw-vuelo,
+    .hw-colgada,
+    .hw-relampago,
+    .hw-bandada-grande,
+    .hw-lejano { display: none; }
+    .hw-aleta, .hw-llama, .hw-cara, .hw-calabaza-luz, .hw-vela-halo,
+    .hw-estrellas circle, .hw-hilo, .hw-arana-baja, .hw-bruma,
+    .hw-ojos-atico ellipse, .hw-ojos-puerta ellipse, .hw-gato-ojo,
+    .bar-table .hw-mesa::before { animation: none !important; }
+    html[data-tema="halloween"] .window-glass { animation: none; }
+    .hw-sale { display: none; }
+}

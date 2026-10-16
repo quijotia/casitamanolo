@@ -1,5 +1,6 @@
 ---
 // src/pages/servicios.astro
+import Halloween from '../../halloween/Halloween.astro';
 import { ClientRouter } from 'astro:transitions';
 import { rutasDeIdioma, enlace, t, type Idioma } from '../../i18n/config';
 import { textos } from '../../i18n/textos';
@@ -28,6 +29,7 @@ const cursos = ['primeros', 'segundos', 'postres'] as const;
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <Halloween />
     <ClientRouter />
     
     <style>

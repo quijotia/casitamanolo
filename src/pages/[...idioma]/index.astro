@@ -7,6 +7,7 @@ import { textos } from '../../i18n/textos';
 import { enlaceWhatsapp } from '../../data/casa';
 import { clients } from '../../data/clients';
 import Idiomas from '../../components/Idiomas.astro';
+import Encantada from '../../halloween/Encantada.astro';
 
 export function getStaticPaths() { return rutasDeIdioma(); }
 const { idioma } = Astro.props as { idioma: Idioma };
@@ -42,6 +43,10 @@ const Z = T.home.zonas;
     <!-- ESCENA PRINCIPAL (La Casa limpia y restaurada) -->
     <div class="stage">
         <svg class="svg-layer fade-in-up" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg" role="navigation" aria-label={T.home.mapa}>
+
+            <!-- HALLOWEEN: noche, luna y estrellas detrás de todo (src/halloween) -->
+            <Encantada parte="defs" />
+            <Encantada parte="cielo" idioma={idioma} />
 
             <!-- CHIMENEA: en vez de humo salen notas -->
             <g class="house-parts deco">
@@ -142,10 +147,13 @@ const Z = T.home.zonas;
                 <path d="M 285,350 L 315,350 L 315,360 Q 315,380 300,380 Q 285,380 285,360 Z" class="line-art fill-bg" />
                 <path class="wine-liquid" d="M 287,365 Q 300,380 313,365 Z" fill="var(--accent-color)" stroke="none" />
                 <path class="wine-stream" d="M 295,300 Q 310,300 300,370" />
+                <Encantada parte="burbujas" />
                 <g class="bottle">
                     <path d="M 230,420 L 230,320 Q 230,300 240,280 L 240,240 L 250,240 L 250,280 Q 260,300 260,320 L 260,420 Z" class="line-art fill-bg" />
                     <rect x="230" y="340" width="30" height="40" stroke="none" fill="rgba(17, 35, 30, 0.1)" class="bottle-label" />
+                    <Encantada parte="botella" />
                 </g>
+                <Encantada parte="calabaza-botella" />
 
                 <g transform="translate(278, 252)"><g class="pulse" style="--delay: 0s">
                     <circle class="pulse-ring" r="7" /><circle class="pulse-dot" r="4.5" />
@@ -220,6 +228,7 @@ const Z = T.home.zonas;
                     <line x1="795" y1="385" x2="800" y2="420" class="line-art" />
                     <line x1="780" y1="386" x2="780" y2="420" class="line-art" />
                     <line x1="762" y1="405" x2="798" y2="405" class="line-art" />
+                    <Encantada parte="gato" />
                 </g>
 
                 <g transform="translate(816, 362)"><g class="pulse" style="--delay: -1.8s">
@@ -235,6 +244,7 @@ const Z = T.home.zonas;
 
             <!-- 5. ESTRUCTURA (Pared de la casa) -->
             <rect x="340" y="240" width="220" height="180" class="line-art fill-bg house-parts deco" />
+            <Encantada parte="arana" />
 
             <!-- ============================================================
                  6. VENTANA  ->  /galeria
@@ -248,6 +258,7 @@ const Z = T.home.zonas;
 
                 <g class="window-anim">
                     <rect x="470" y="300" width="50" height="50" class="line-art window-glass" fill="#FDE68A" />
+                    <Encantada parte="ventana" />
                     <line x1="495" y1="300" x2="495" y2="350" class="line-art" />
                     <line x1="470" y1="325" x2="520" y2="325" class="line-art" />
                 </g>
@@ -263,6 +274,8 @@ const Z = T.home.zonas;
                 </g></g>
             </a>
 
+            <Encantada parte="calabaza" />
+
             <!-- ============================================================
                  7. PUERTA  ->  vídeo (modo cine), no navega
                  ============================================================ -->
@@ -272,6 +285,8 @@ const Z = T.home.zonas;
                 <title>{Z.cine.titulo}</title>
                 <rect x="368" y="322" width="74" height="105" fill="transparent" />
                 <rect class="focus-ring" x="368" y="322" width="74" height="105" rx="12" />
+
+                <Encantada parte="puerta" />
 
                 <g class="door-anim">
                     <path d="M 380,420 L 380,340 A 25 25 0 0 1 430,340 L 430,420 Z" class="line-art fill-bg door-panel" />
@@ -301,6 +316,7 @@ const Z = T.home.zonas;
 
                 <!-- El ático (fondo oscuro) -->
                 <polygon points="325,233 450,140 575,233" class="line-art" fill="var(--ink-color)" />
+                <Encantada parte="atico" />
 
                 <!-- Logo aleatorio oculto bajo el tejado -->
                 <text id="random-client-logo" x="450" y="215" class="attic-text"
@@ -310,6 +326,7 @@ const Z = T.home.zonas;
                 <g class="interactive-roof">
                     <polygon points="325,233 450,140 575,233" class="line-art" fill="var(--accent-color)" />
                 </g>
+                <Encantada parte="murcielagos" />
 
                 <g transform="translate(588, 226)"><g class="pulse" style="--delay: -2.1s">
                     <circle class="pulse-ring" r="7" /><circle class="pulse-dot" r="4.5" />
@@ -354,8 +371,11 @@ const Z = T.home.zonas;
                 </g>
             </a>
 
+            <Encantada parte="tumbas" />
+
             <!-- LÍNEA DE SUELO -->
             <line x1="150" y1="420" x2="850" y2="420" stroke="var(--ink-color)" stroke-width="2" stroke-dasharray="8 12" opacity="0.2" stroke-linecap="round" class="deco suelo" />
+            <Encantada parte="niebla" />
         </svg>
     </div>
 

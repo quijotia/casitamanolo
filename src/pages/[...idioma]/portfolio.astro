@@ -3,6 +3,7 @@
 //
 // Archivo musical: estaciones con sus cajas de discos. El contenido vive en
 // src/data/portfolio.ts; esta página solo lo pinta y lo hace sonar.
+import Halloween from '../../halloween/Halloween.astro';
 import { ClientRouter } from 'astro:transitions';
 import Funda from '../../components/Funda.astro';
 import { estaciones } from '../../data/portfolio';
@@ -35,6 +36,7 @@ const T = textos[idioma];
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <Halloween />
     <ClientRouter />
 
     <style>

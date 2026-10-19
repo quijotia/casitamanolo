@@ -4,6 +4,7 @@
 // Galeria de mesas: cada mesa del bar tiene servilletas dobladas con una foto
 // impresa. Se desdoblan al pasar el raton o al tocarlas, y abiertas se amplian.
 // Las mesas y sus fotos viven en src/data/galeria.ts.
+import Halloween from '../../halloween/Halloween.astro';
 import { ClientRouter } from 'astro:transitions';
 import { rutasDeIdioma, enlace, t, alternativas, type Idioma } from '../../i18n/config';
 import { textos } from '../../i18n/textos';
@@ -29,6 +30,7 @@ const T = textos[idioma];
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <Halloween />
     <ClientRouter />
 
     <style>

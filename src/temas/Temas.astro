@@ -1,0 +1,83 @@
+---
+// Va en el <head> de todas las páginas. Decide qué disfraz lleva la casa
+// (o ninguno) y lo apunta en <html data-tema="…" data-pagina="…"> antes de
+// pintar nada, para que no se vea ni un instante la web normal.
+//
+// El Client Router de Astro, al cambiar de página, copia los atributos de
+// <html> de la página nueva y borra los demás, así que el disfraz se vuelve
+// a poner en la página nueva antes de que entre (astro:before-swap) y, por
+// si acaso, justo después (astro:after-swap).
+import { temporadas } from './config';
+import { idiomas, idiomaPorDefecto } from '../i18n/config';
+import '../halloween/halloween.css';
+import '../navidad/navidad.css';
+
+const prefijos = idiomas.filter((i) => i !== idiomaPorDefecto);
+const lista = temporadas.map(({ tema, desde, hasta }) => ({ tema, desde, hasta }));
+---
+
+<!-- Las fuentes de los disfraces: el navegador solo las descarga si se usan -->
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet" />
+
+<script is:inline define:vars={{ lista, prefijos }}>
+    if (!window.__casaDisfrazada) {
+        window.__casaDisfrazada = true;
+
+        var nombres = lista.map(function (t) { return t.tema; });
+        var conocido = function (t) { return t === 'normal' || nombres.indexOf(t) !== -1; };
+
+        var temaDeHoy = function () {
+            var hoy = new Date();
+            var md = String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+            for (var i = 0; i < lista.length; i++) {
+                var t = lista[i];
+                var dentro = t.desde <= t.hasta ? md >= t.desde && md <= t.hasta : md >= t.desde || md <= t.hasta;
+                if (dentro) return t.tema;
+            }
+            return null;
+        };
+
+        // ?tema=… fuerza un tema (o 'normal') mientras dure la pestaña
+        var pedido = function (url) {
+            var p = url.searchParams.get('tema');
+            try {
+                if (conocido(p)) sessionStorage.setItem('casita-tema', p);
+                var guardado = sessionStorage.getItem('casita-tema');
+                return conocido(guardado) ? guardado : null;
+            } catch (e) {
+                return conocido(p) ? p : null;
+            }
+        };
+
+        var paginaDe = function (url) {
+            var trozos = url.pathname.split('/').filter(Boolean);
+            if (trozos.length && prefijos.indexOf(trozos[0]) !== -1) trozos.shift();
+            return trozos[0] || 'inicio';
+        };
+
+        var vestir = function (raiz, url) {
+            var p = pedido(url);
+            var tema = p ? (p === 'normal' ? null : p) : temaDeHoy();
+            if (tema) {
+                raiz.setAttribute('data-tema', tema);
+                raiz.setAttribute('data-pagina', paginaDe(url));
+            } else {
+                raiz.removeAttribute('data-tema');
+                raiz.removeAttribute('data-pagina');
+            }
+        };
+
+        vestir(document.documentElement, new URL(location.href));
+        document.addEventListener('astro:before-swap', function (e) {
+            vestir(e.newDocument.documentElement, e.to);
+        });
+        document.addEventListener('astro:after-swap', function () {
+            vestir(document.documentElement, new URL(location.href));
+        });
+    }
+</script>
+
+<script>
+    import '../halloween/sustos';
+    import '../navidad/sorpresas';
+</script>

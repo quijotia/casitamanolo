@@ -6,6 +6,7 @@ import { textos } from '../../i18n/textos';
 import { correo, whatsapp, enlaceWhatsapp } from '../../data/casa';
 import Idiomas from '../../components/Idiomas.astro';
 import Encantada from '../../halloween/Encantada.astro';
+import Navidena from '../../navidad/Navidena.astro';
 
 export function getStaticPaths() { return rutasDeIdioma(); }
 const { idioma } = Astro.props as { idioma: Idioma };
@@ -58,8 +59,9 @@ const T = textos[idioma];
                     <div class="row"><span>{T.contacto.items.tema}</span> <span>{T.contacto.invitacion}</span></div>
                     <div class="row"><span>{T.contacto.items.revisiones}</span> <span>{T.contacto.invitacion}</span></div>
                     <div class="row"><span>{T.contacto.items.mezcla}</span> <span>{T.contacto.invitacion}</span></div>
-                    <!-- Solo en Halloween (src/halloween) -->
+                    <!-- Solo en Halloween y en Navidad (src/temas) -->
                     <Encantada parte="ticket" idioma={idioma} />
+                    <Navidena parte="ticket" idioma={idioma} />
                 </div>
 
                 <div class="divider"></div>

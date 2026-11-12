@@ -13,7 +13,7 @@
 
 export const temporadas = [
     { tema: 'halloween', desde: '10-17', hasta: '11-02' },
-    { tema: 'navidad', desde: '12-01', hasta: '01-06' },
+    { tema: 'navidad', desde: '11-25', hasta: '01-06' },
 ] as const;
 
 export type Tema = (typeof temporadas)[number]['tema'];

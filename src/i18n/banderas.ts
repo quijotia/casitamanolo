@@ -21,4 +21,5 @@ export interface Bandera {
 export const banderas: Record<Idioma, Bandera> = {
     es: { nombre: 'Español', codigo: 'ES', pais: 'es' },
     en: { nombre: 'English', codigo: 'EN', pais: 'us' },
+    zh: { nombre: '中文', codigo: '中文', pais: 'cn' },
 };

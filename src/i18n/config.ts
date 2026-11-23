@@ -6,7 +6,7 @@
 // meterlo en `idiomas`, traducir src/i18n/textos.ts y los textos de
 // src/data: TypeScript se encarga de avisar de todo lo que falte.
 
-export const idiomas = ['es', 'en'] as const;
+export const idiomas = ['es', 'en', 'zh'] as const;
 export type Idioma = (typeof idiomas)[number];
 
 export const idiomaPorDefecto: Idioma = 'es';
@@ -42,4 +42,5 @@ export function alternativas(destino: string) {
 export const codigoLang: Record<Idioma, string> = {
     es: 'es-ES',
     en: 'en-US',
+    zh: 'zh-CN',
 };

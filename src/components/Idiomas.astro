@@ -151,7 +151,8 @@ const T = textos[idioma];
        bajan a la esquina de la izquierda: lejos de las flechas y del
        distintivo de Netlify, que va a la derecha.
 
-       Y solo se ve la chapa del idioma al que puedes cambiar: el que estás
+       Van en fila, para no tapar más esquina con un idioma más. Y solo se
+       ve la chapa de los idiomas a los que puedes cambiar: el que estás
        leyendo ya lo dice la propia página, así que gastar con él una esquina
        encima del contenido no compensa en una pantalla pequeña. */
     @media (max-width: 680px) {
@@ -160,8 +161,8 @@ const T = textos[idioma];
             bottom: 12px;
             left: 10px;
             transform: none;
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row;
+            align-items: center;
             gap: 6px;
         }
         .idioma--puesto { display: none; }

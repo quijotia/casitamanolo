@@ -113,67 +113,78 @@ const T = textos[idioma];
         /* Un mueble no ocupa toda la pared: se queda en su ancho */
         .indice-panel { width: min(880px, 100%); max-height: 100%; padding: 0 12px; overflow-y: auto; overflow-x: hidden; text-align: center; }
 
+        /* El título del archivo, como la placa del mueble: grande y en
+           minúsculas, que se lea de un vistazo y no parezca un aviso */
         .indice-cabecera h2 {
-            margin: 0 0 8px;
+            margin: 0 0 10px;
             font-family: 'Space Mono', monospace; font-weight: 700;
-            font-size: clamp(1rem, 2.4vw, 1.4rem);
-            letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-color);
+            font-size: clamp(1.7rem, 4.2vw, 2.6rem);
+            letter-spacing: 0.02em; line-height: 1.05; color: var(--text-color);
         }
         .indice-cabecera p {
-            margin: 0 0 30px;
-            font-size: 0.72rem; letter-spacing: 0.14em; color: rgba(244, 241, 236, 0.5);
+            margin: 0 auto 34px; max-width: 40em; text-wrap: balance;
+            font-size: 0.86rem; line-height: 1.5; color: rgba(244, 241, 236, 0.62);
         }
 
         /* ========================================================
-           EL MUEBLE DE CAJONES
-           Seis huecos de vinilos, como el mueble que se usa para guardarlos:
-           el frente lleva una onda recortada por la que asoma la portada y por
-           la que se meten los dedos para ir pasando discos. En la madera y con
-           el filo verde de la casa, y a oscuras, que esto es el salón de
-           escucha y no un escaparate.
+           LA CAJONERA
+           Un mueble de nogal con seis cajones de vinilos. Cada cajón va
+           entreabierto y por arriba asoman las fundas; en el frente lleva
+           un tarjetero de latón con su ficha, como los archivos de verdad,
+           y un tirador. Al señalarlo, el cajón sale y la funda sube.
            ======================================================== */
         .mueble {
+            --nogal-claro: #8a5a37;
+            --nogal: #6b4227;
+            --nogal-oscuro: #3e2414;
+            --laton: #d8b56a;
+            --laton-oscuro: #8f6b2a;
+            --ficha: #f4ecd9;
+            --tinta: #2a1c10;
             position: relative;
-            margin: 0 0 54px;
-            padding: 13px;
-            border-radius: 5px;
+            margin: 0 0 58px;
+            padding: 16px;
+            border-radius: 6px;
             background:
-                /* la veta, en vertical como las duelas de un mueble */
-                repeating-linear-gradient(90deg, rgba(0,0,0,0.11) 0 1px, transparent 1px 11px),
-                linear-gradient(180deg, #614a34 0%, #523e2b 55%, #412f20 100%);
+                repeating-linear-gradient(90deg, rgba(0,0,0,0.08) 0 1px, transparent 1px 7px, rgba(255,214,170,0.03) 7px 8px, transparent 8px 15px),
+                linear-gradient(180deg, #4b2c18 0%, #3e2414 60%, #321c0f 100%);
             box-shadow:
-                inset 0 0 0 1px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255, 226, 186, 0.16),
-                0 2px 4px rgba(0,0,0,0.42),
-                0 18px 32px rgba(0,0,0,0.4),
-                0 44px 66px rgba(0,0,0,0.42);
+                inset 0 0 0 1px rgba(0,0,0,0.5),
+                inset 0 2px 0 rgba(255, 214, 170, 0.12),
+                inset 0 -3px 0 rgba(0,0,0,0.25),
+                0 2px 4px rgba(0,0,0,0.45),
+                0 22px 40px rgba(0,0,0,0.45),
+                0 50px 80px rgba(0,0,0,0.4);
         }
 
-        /* La encimera: es donde estaría el tocadiscos */
+        /* La encimera, con su moldura: ahí iría el tocadiscos */
         .mueble::before {
-            content: ''; position: absolute; left: -7px; right: -7px; top: -11px; height: 11px;
-            border-radius: 3px 3px 0 0;
-            background: linear-gradient(180deg, #33251a, #1d150e);
-            box-shadow: inset 0 1px 0 rgba(255,226,186,0.14), 0 3px 7px rgba(0,0,0,0.4);
+            content: ''; position: absolute; left: -10px; right: -10px; top: -16px; height: 16px;
+            border-radius: 4px 4px 1px 1px;
+            background:
+                linear-gradient(180deg, rgba(255,214,170,0.18) 0 1px, transparent 1px),
+                linear-gradient(180deg, #5c3820 0%, #4a2c19 55%, #2f1a0d 56%, #3a2213 100%);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.45);
         }
 
-        /* Las dos patas, como las del mueble de verdad */
+        /* Las patas, torneadas y un poco abiertas */
         .mueble::after {
-            content: ''; position: absolute; left: 9%; right: 9%; bottom: -13px; height: 13px;
+            content: ''; position: absolute; left: 6%; right: 6%; bottom: -18px; height: 18px;
             background:
-                linear-gradient(180deg, #4b361f, #2e2114) left / 22% 100% no-repeat,
-                linear-gradient(180deg, #4b361f, #2e2114) right / 22% 100% no-repeat;
-            filter: drop-shadow(0 5px 7px rgba(0,0,0,0.5));
+                linear-gradient(180deg, #4a2c19, #24140a) left / 26px 100% no-repeat,
+                linear-gradient(180deg, #4a2c19, #24140a) right / 26px 100% no-repeat;
+            clip-path: polygon(0 0, 26px 0, 22px 100%, 6px 100%, 0 0, 100% 0, calc(100% - 26px) 0, calc(100% - 22px) 100%, calc(100% - 6px) 100%, 100% 0);
+            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5));
         }
 
         .indice-cajas {
             list-style: none; margin: 0; padding: 0;
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
         }
 
         .caja {
             width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
-            display: block; text-align: left;
+            display: block; text-align: center;
             font-family: 'Space Mono', monospace; color: inherit;
         }
         .caja:focus-visible { outline: none; }
@@ -182,31 +193,29 @@ const T = textos[idioma];
            está oscuro y se le ve el fondo cuando el cajón sale. */
         .caja-hueco {
             position: relative; display: block;
-            aspect-ratio: 1 / 0.92;
-            border-radius: 2px;
+            aspect-ratio: 1 / 0.9;
+            border-radius: 3px;
             perspective: 760px;
-            background: linear-gradient(180deg, #120c08, #090604);
+            background: linear-gradient(180deg, #0d0805, #070403);
             box-shadow:
-                inset 0 0 0 1px rgba(0,0,0,0.6),
-                inset 0 9px 20px rgba(0,0,0,0.75);
+                inset 0 0 0 1px rgba(0,0,0,0.7),
+                inset 0 12px 22px rgba(0,0,0,0.85),
+                0 1px 0 rgba(255,214,170,0.1);
         }
 
-        /* EL CAJÓN: esto sí se mueve. Sale hacia ti de verdad —translateZ con
-           perspectiva— en vez de deslizarse en plano, que es lo que hace un
-           cajón: se acerca, y al acercarse se ve más grande y tapa su hueco.
-           Recorta él lo que lleva dentro, así la funda no se sale por abajo. */
+        /* EL CAJÓN: sale hacia ti de verdad —translateZ con perspectiva— en
+           vez de deslizarse en plano: se acerca, se ve más grande y tapa su
+           hueco. Recorta lo que lleva dentro, así la funda no se sale. */
         .caja-cajon {
             position: absolute; inset: 0; overflow: hidden;
-            border-radius: 2px;
-            background: linear-gradient(180deg, #1a120c, #100b07);
+            border-radius: 3px;
+            background: linear-gradient(180deg, #1b110a, #110a06);
             transform: translate3d(0, 0, 0);
             transition: transform 0.45s var(--ease-spring), box-shadow 0.45s ease;
         }
         .caja:hover .caja-cajon,
         .caja:focus-visible .caja-cajon {
-            /* Baja al salir, y bastante: lo que vende que es un cajón no es
-               que se acerque, es que detrás se quede el hueco vacío. */
-            transform: translate3d(0, 9%, 34px);
+            transform: translate3d(0, 7%, 30px);
             box-shadow:
                 0 6px 12px rgba(0,0,0,0.45),
                 0 20px 34px rgba(0,0,0,0.45),
@@ -214,10 +223,9 @@ const T = textos[idioma];
         }
         .caja:focus-visible .caja-cajon {
             box-shadow:
-                inset 0 0 0 3px var(--accent-color),
+                0 0 0 3px var(--accent-color),
                 0 6px 12px rgba(0,0,0,0.45),
-                0 20px 34px rgba(0,0,0,0.45),
-                0 40px 56px rgba(0,0,0,0.4);
+                0 20px 34px rgba(0,0,0,0.45);
         }
         /* El que sale se pone delante de sus vecinos */
         .indice-cajas li { position: relative; }
@@ -225,84 +233,114 @@ const T = textos[idioma];
 
         /* Los discos de detrás, solo insinuados por el canto */
         .caja-pila {
-            position: absolute; left: 9%; right: 5%; top: 7%; height: 46%;
+            position: absolute; left: 12%; right: 12%; top: 5%; height: 40%;
             background:
-                linear-gradient(90deg, rgba(244,241,236,0.16) 0 2px, transparent 2px) right / 100% 100% no-repeat,
-                linear-gradient(180deg, #2a2119, #1b150f);
-            transform: rotate(-0.6deg);
+                repeating-linear-gradient(180deg, rgba(244,241,236,0.1) 0 1px, transparent 1px 5px),
+                linear-gradient(180deg, #2c2119, #1a140f);
+            transform: rotate(-0.8deg);
         }
 
-        /* La portada que asoma por la onda */
-        /* La funda es cuadrada, como un vinilo: si se estira a lo ancho deja
-           de parecer un disco y parece un fotograma. Se sale por abajo a
-           propósito, que para eso está metida en el cajón. */
-        /* OJO con el margen de arriba: el cajón recorta lo que lleva dentro,
-           así que lo que sube la funda al asomarse tiene que caber en este
-           hueco. Y no es una cuenta directa: el % de translateY va sobre el
-           alto de la propia funda, que es cuadrada y algo más baja que el
-           cajón, así que un 4% de funda son ~3,5% de cajón. Con 7% aquí
-           sobra holgura; si se sube el salto, hay que subir esto también. */
+        /* La funda que asoma por encima del frente. Cuadrada, como un
+           vinilo. OJO: el cajón recorta, así que lo que sube al asomarse
+           tiene que caber en el margen de arriba (top). */
         .caja-disco {
-            position: absolute; left: 8%; top: 7%; width: 80%; aspect-ratio: 1;
+            position: absolute; left: 50%; top: 7%; width: 66%; aspect-ratio: 1;
+            transform: translateX(-50%) rotate(-1.2deg);
             background-color: #0b1714; background-size: cover; background-position: center;
             box-shadow:
                 0 2px 4px rgba(0,0,0,0.5),
                 0 10px 18px rgba(0,0,0,0.45),
                 inset 0 0 0 1px rgba(244,241,236,0.17);
-            transition: transform 0.4s var(--ease-spring);
+            transition: transform 0.45s var(--ease-spring);
         }
         /* El brillo del plástico de la funda */
         .caja-disco::after {
             content: ''; position: absolute; inset: 0;
             background: linear-gradient(118deg, rgba(255,255,255,0.16) 0 15%, transparent 42%);
         }
-        /* Al señalarlo, el disco se asoma como cuando tiras de él */
         .caja:hover .caja-disco,
-        .caja:focus-visible .caja-disco { transform: translateY(-4%); }
+        .caja:focus-visible .caja-disco { transform: translateX(-50%) translateY(-6%) rotate(0deg); }
 
-        /* EL FRENTE, con la onda recortada.
-           La forma sale de una máscara SVG estirada, así que se adapta a
-           cualquier ancho; y el filo claro de la onda es el mismo trazo
-           pintado dentro, que la máscara recorta justo por la curva. */
+        /* EL FRENTE del cajón: nogal con canto biselado, recto por arriba.
+           En él van el tarjetero y el tirador. */
         .caja-frente {
-            position: absolute; left: 0; right: 0; bottom: 0; height: 57%;
-            display: flex; flex-direction: column; justify-content: flex-end;
-            padding: 0 11px 10px; color: #2b1d10;
-            background-image:
-                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60' preserveAspectRatio='none'%3E%3Cpath d='M0 1.7 H9 C27 1.7 30 29.7 50 29.7 C70 29.7 73 1.7 91 1.7 H100' fill='none' stroke='rgba(255,238,212,0.5)' stroke-width='1.8'/%3E%3C/svg%3E"),
-                repeating-linear-gradient(90deg, rgba(92, 68, 42, 0.14) 0 1px, transparent 1px 10px),
-                linear-gradient(180deg, #cdbb9c 0%, #bba886 46%, #a28d69 100%);
-            background-size: 100% 100%, auto, auto;
-            background-repeat: no-repeat, repeat, no-repeat;
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60' preserveAspectRatio='none'%3E%3Cpath d='M0 0 H9 C27 0 30 28 50 28 C70 28 73 0 91 0 H100 V60 H0 Z' fill='%23000'/%3E%3C/svg%3E");
-            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60' preserveAspectRatio='none'%3E%3Cpath d='M0 0 H9 C27 0 30 28 50 28 C70 28 73 0 91 0 H100 V60 H0 Z' fill='%23000'/%3E%3C/svg%3E");
-            -webkit-mask-size: 100% 100%;
-            mask-size: 100% 100%;
-            filter: drop-shadow(0 -3px 6px rgba(0, 0, 0, 0.5));
+            position: absolute; left: 0; right: 0; bottom: 0; height: 46%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 9px; padding: 10px 12px 12px;
+            border-radius: 2px 2px 3px 3px;
+            background:
+                repeating-linear-gradient(92deg, rgba(0,0,0,0.07) 0 1px, transparent 1px 9px, rgba(255,214,170,0.04) 9px 10px, transparent 10px 17px),
+                linear-gradient(180deg, var(--nogal-claro) 0%, var(--nogal) 55%, #5a361f 100%);
+            box-shadow:
+                inset 0 2px 0 rgba(255, 220, 180, 0.28),
+                inset 2px 0 0 rgba(255, 220, 180, 0.1),
+                inset -2px 0 0 rgba(0,0,0,0.22),
+                inset 0 -3px 0 rgba(0,0,0,0.3),
+                0 -4px 10px rgba(0,0,0,0.55);
             transition: filter 0.3s ease;
         }
         .caja:hover .caja-frente,
-        .caja:focus-visible .caja-frente { filter: drop-shadow(0 -3px 6px rgba(0, 0, 0, 0.5)) brightness(1.06); }
+        .caja:focus-visible .caja-frente { filter: brightness(1.07); }
 
-        /* El número, a fuego en la madera */
-        .caja-num {
-            position: absolute; top: 8%; right: 9px;
-            font-size: 0.52rem; letter-spacing: 0.1em;
-            color: rgba(43, 29, 16, 0.45);
+        /* EL TARJETERO de latón, con sus dos tornillos, y dentro la ficha */
+        .caja-etiqueta {
+            position: relative;
+            display: block; width: min(82%, 220px);
+            padding: 4px;
+            border-radius: 3px;
+            background: linear-gradient(180deg, #f1d896 0%, var(--laton) 35%, #b48d45 70%, var(--laton-oscuro) 100%);
+            box-shadow: 0 1px 0 rgba(255,240,200,0.35), 0 2px 4px rgba(0,0,0,0.45);
+        }
+        .caja-etiqueta::before,
+        .caja-etiqueta::after {
+            content: ''; position: absolute; top: 50%; width: 5px; height: 5px; margin-top: -2.5px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #fff2c9, #9a7432 70%);
+            box-shadow: 0 0 0 1px rgba(80,55,20,0.5);
+        }
+        .caja-etiqueta::before { left: -9px; }
+        .caja-etiqueta::after { right: -9px; }
+
+        .caja-ficha {
+            display: block;
+            padding: 7px 8px 6px;
+            border-radius: 1px;
+            background:
+                linear-gradient(180deg, transparent 0 calc(100% - 9px), rgba(190, 60, 50, 0.35) calc(100% - 9px) calc(100% - 8px), transparent calc(100% - 8px)),
+                var(--ficha);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.28);
+            color: var(--tinta);
         }
 
+        /* El nombre, escrito a máquina en la ficha. Viene en mayúsculas
+           en los datos; aquí se lee mejor como palabra normal */
         .caja-nombre {
-            display: block; font-size: 0.68rem; font-weight: 700;
-            letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.3;
+            display: block;
+            font-size: clamp(0.92rem, 1.8vw, 1.18rem); font-weight: 700;
+            letter-spacing: 0.01em; line-height: 1.15;
+            text-transform: lowercase;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
             transition: color 0.3s ease;
         }
-        .caja-cuenta { display: block; margin-top: 3px; font-size: 0.54rem; letter-spacing: 0.12em; opacity: 0.6; }
+        .caja-nombre::first-letter { text-transform: uppercase; }
+        .caja-cuenta {
+            display: block; margin-top: 3px;
+            font-size: 0.66rem; line-height: 1.3; color: rgba(42, 28, 16, 0.62);
+        }
         .caja:hover .caja-nombre,
         .caja:focus-visible .caja-nombre { color: #8c2419; }
 
+        /* EL TIRADOR, de concha y del mismo latón */
+        .caja-tirador {
+            display: block; width: 34%; max-width: 74px; height: 9px;
+            border-radius: 0 0 40px 40px / 0 0 18px 18px;
+            background: linear-gradient(180deg, #f1d896 0%, var(--laton) 40%, var(--laton-oscuro) 100%);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.5), inset 0 -2px 0 rgba(0,0,0,0.2);
+        }
+
         .indice-cerrar {
-            font-family: 'Space Mono', monospace; font-size: 0.68rem; font-weight: 700;
-            letter-spacing: 0.24em; text-transform: uppercase;
+            font-family: 'Space Mono', monospace; font-size: 0.82rem; font-weight: 700;
+            letter-spacing: 0.02em;
             color: var(--text-color); background: none;
             border: 1px solid rgba(244, 241, 236, 0.3); border-radius: 999px;
             padding: 12px 26px; cursor: pointer; transition: background-color 0.3s, color 0.3s;
@@ -872,14 +910,18 @@ const T = textos[idioma];
             .btn-volver { white-space: nowrap; }
             /* Arriba manda el volver a casa: el índice empieza por debajo */
             .indice { align-items: flex-start; padding: 52px 14px 18px; }
-            .indice-cajas { grid-template-columns: repeat(2, 1fr); gap: 9px; }
-            .mueble { padding: 9px; margin-bottom: 44px; }
-            .caja-nombre { font-size: 0.56rem; letter-spacing: 0.07em; }
-            .caja-cuenta { font-size: 0.5rem; }
-            .caja-frente { padding: 0 8px 8px; }
-            .indice-cabecera h2 { letter-spacing: 0.26em; }
-            .indice-cabecera p { margin-bottom: 20px; font-size: 0.62rem; }
-            .caja:hover .caja-disco, .caja:focus-visible .caja-disco { transform: none; }
+            .indice-cajas { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .mueble { padding: 10px; margin-bottom: 46px; }
+            .caja-frente { gap: 6px; padding: 7px 7px 8px; }
+            .caja-etiqueta { width: 90%; padding: 3px; }
+            .caja-etiqueta::before, .caja-etiqueta::after { display: none; }
+            .caja-ficha { padding: 5px 5px 5px; }
+            .caja-nombre { font-size: 0.9rem; }
+            .caja-cuenta { font-size: 0.6rem; }
+            .caja-tirador { height: 7px; }
+            .indice-cabecera h2 { font-size: 1.7rem; }
+            .indice-cabecera p { margin-bottom: 24px; font-size: 0.8rem; }
+            .caja:hover .caja-disco, .caja:focus-visible .caja-disco { transform: translateX(-50%) rotate(-1.2deg); }
             .caja:hover .caja-cajon, .caja:focus-visible .caja-cajon { transform: translate3d(0, 0, 0); }
 
             /* Arriba no cabe con el indicador: baja al centro, justo encima
@@ -926,7 +968,7 @@ const T = textos[idioma];
         @media (prefers-reduced-motion: reduce) {
         .caja-cajon, .caja-disco { transition: none; }
         .caja:hover .caja-cajon, .caja:focus-visible .caja-cajon { transform: translate3d(0, 0, 0); }
-        .caja:hover .caja-disco, .caja:focus-visible .caja-disco { transform: none; }
+        .caja:hover .caja-disco, .caja:focus-visible .caja-disco { transform: translateX(-50%) rotate(-1.2deg); }
             .fondo--airbnb::after { animation: none; }
             .fondo { transition: none; }
         }
@@ -984,9 +1026,13 @@ const T = textos[idioma];
                                                 <span class="caja-pila" aria-hidden="true"></span>
                                                 <span class="caja-disco" style={`background-image: url('${portada}')`}></span>
                                                 <span class="caja-frente">
-                                                    <span class="caja-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                                                    <span class="caja-nombre">{t(est.nombre, idioma)}</span>
-                                                    <span class="caja-cuenta">{discos} {discos === 1 ? T.portfolio.disco : T.portfolio.discos}</span>
+                                                    <span class="caja-etiqueta">
+                                                        <span class="caja-ficha">
+                                                            <span class="caja-nombre">{t(est.nombre, idioma)}</span>
+                                                            <span class="caja-cuenta">{discos} {discos === 1 ? T.portfolio.disco : T.portfolio.discos}</span>
+                                                        </span>
+                                                    </span>
+                                                    <span class="caja-tirador" aria-hidden="true"></span>
                                                 </span>
                                             </span>
                                         </span>

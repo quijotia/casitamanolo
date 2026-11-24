@@ -4,10 +4,6 @@ import type { Texto } from '../i18n/config';
 
 export const textosNavidad = {
     edicion: { es: 'Edición Navidad', en: 'Christmas edition', zh: '圣诞特别版' },
-    feliz: { es: '¡Feliz Navidad!', en: 'Merry Christmas!', zh: '圣诞快乐！' },
-    sonidoSi: { es: 'Sorpresas con sonido', en: 'Surprises with sound', zh: '惊喜带声音' },
-    sonidoNo: { es: 'Sorpresas sin sonido', en: 'Silent surprises', zh: '惊喜不带声音' },
-    sonidoAria: { es: 'Activar o silenciar el sonido de las sorpresas', en: 'Turn the surprise sounds on or off', zh: '打开或关闭惊喜的声音' },
     estrella: { es: 'La estrella. Pide un deseo', en: 'The star. Make a wish', zh: '星星。许个愿吧' },
     deseo: { es: 'Deseo pedido. Que se cumpla', en: 'Wish made. May it come true', zh: '愿望已许下，愿它成真' },
     tejadoRegalos: { es: 'Hay regalos en el ático…', en: 'There are presents in the attic…', zh: '阁楼里有礼物……' },

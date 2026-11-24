@@ -1,4 +1,5 @@
-// Las sorpresas de Navidad y el atrezo que no cabe en el CSS.
+// El atrezo de Navidad que no cabe en el CSS, y sus pocas sorpresas: todo
+// tranquilo, sin sonidos ni nada que salte a pantalla completa.
 //
 // Solo hace algo cuando <html data-tema="navidad">. Los escuchadores de
 // documento se ponen una vez (este módulo se carga una sola vez aunque el
@@ -19,133 +20,6 @@ const texto = (clave: keyof typeof N) => N[clave][idioma()];
 const sinMovimiento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const tactil = () => window.matchMedia('(hover: none)').matches;
 const azar = (min: number, max: number) => min + Math.random() * (max - min);
-
-/* ==========================================================================
-   SONIDO
-   Todo sintetizado con Web Audio: no hay archivos que cargar y solo suena
-   después de que alguien pulse algo (los navegadores no dejan otra cosa).
-   ========================================================================== */
-const CLAVE_SONIDO = 'casita-navidad-sonido';
-const conSonido = () => {
-    try { return localStorage.getItem(CLAVE_SONIDO) !== 'no'; } catch { return true; }
-};
-const guardarSonido = (si: boolean) => {
-    try { localStorage.setItem(CLAVE_SONIDO, si ? 'si' : 'no'); } catch { /* sin almacenamiento: da igual */ }
-};
-
-let ctx: AudioContext | null = null;
-const audio = () => {
-    if (!conSonido()) return null;
-    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctx) return null;
-    ctx ??= new Ctx();
-    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
-    return ctx;
-};
-/** Solo si ya hubo un gesto antes: para sonidos que no nacen de un clic */
-const audioYaDespierto = () => (ctx && ctx.state === 'running' && conSonido() ? ctx : null);
-
-const ruido = (c: AudioContext, segundos: number) => {
-    const buf = c.createBuffer(1, Math.ceil(c.sampleRate * segundos), c.sampleRate);
-    const datos = buf.getChannelData(0);
-    for (let i = 0; i < datos.length; i++) datos[i] = Math.random() * 2 - 1;
-    const src = c.createBufferSource();
-    src.buffer = buf;
-    return src;
-};
-
-/** Una campana: varios parciales que se apagan solos */
-const campana = (c: AudioContext, frecuencia: number, cuando: number, fuerza = 0.16, larga = 1.1) => {
-    const salida = c.createGain();
-    salida.connect(c.destination);
-    [[1, 1], [2.01, 0.42], [3.02, 0.2], [4.2, 0.12]].forEach(([multiplo, peso]) => {
-        const osc = c.createOscillator();
-        const g = c.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = frecuencia * multiplo;
-        g.gain.setValueAtTime(0.0001, cuando);
-        g.gain.exponentialRampToValueAtTime(fuerza * peso, cuando + 0.008);
-        g.gain.exponentialRampToValueAtTime(0.0001, cuando + larga / multiplo);
-        osc.connect(g).connect(salida);
-        osc.start(cuando);
-        osc.stop(cuando + larga + 0.05);
-    });
-};
-
-/** Cascabeles de trineo: ruido muy agudo a golpes */
-const cascabeles = (c: AudioContext | null, cuando?: number, golpes = 10, paso = 0.085) => {
-    if (!c) return;
-    const t = cuando ?? c.currentTime;
-    const src = ruido(c, golpes * paso + 0.3);
-    const filtro = c.createBiquadFilter();
-    filtro.type = 'bandpass';
-    filtro.frequency.value = 7200;
-    filtro.Q.value = 1.6;
-    const g = c.createGain();
-    g.gain.value = 0;
-    for (let i = 0; i < golpes; i++) {
-        const ti = t + i * paso;
-        const fuerza = 0.2 * (i % 2 ? 0.6 : 1);
-        g.gain.setValueAtTime(fuerza, ti);
-        g.gain.exponentialRampToValueAtTime(0.002, ti + 0.07);
-    }
-    src.connect(filtro).connect(g).connect(c.destination);
-    src.start(t);
-};
-
-/** El estribillo de «Jingle Bells» (de 1857, de dominio público) con campanas */
-const villancico = () => {
-    const c = audio();
-    if (!c) return;
-    const t = c.currentTime + 0.05;
-    const MI = 659.25, SOL = 783.99, DO = 523.25, RE = 587.33;
-    const negra = 0.2;
-    // nota, duración en negras
-    const notas: [number, number][] = [
-        [MI, 1], [MI, 1], [MI, 2],
-        [MI, 1], [MI, 1], [MI, 2],
-        [MI, 1], [SOL, 1], [DO, 1.5], [RE, 0.5], [MI, 3],
-    ];
-    let ti = t;
-    notas.forEach(([f, d]) => {
-        campana(c, f, ti, 0.14, Math.min(1.4, 0.5 + d * 0.3));
-        ti += d * negra;
-    });
-    cascabeles(c, t, Math.round((ti - t) / (negra / 2)), negra / 2);
-};
-
-/** Arpegio que sube, para la estrella */
-const destello = () => {
-    const c = audio();
-    if (!c) return;
-    const t = c.currentTime;
-    [1046.5, 1318.5, 1568, 2093, 2637].forEach((f, i) => campana(c, f, t + i * 0.07, 0.09, 1.3));
-};
-
-/** El corcho del cava y la espuma */
-const descorche = (c: AudioContext | null) => {
-    if (!c) return;
-    const t = c.currentTime;
-    const osc = c.createOscillator();
-    const g = c.createGain();
-    osc.frequency.setValueAtTime(700, t);
-    osc.frequency.exponentialRampToValueAtTime(120, t + 0.07);
-    g.gain.setValueAtTime(0.35, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
-    osc.connect(g).connect(c.destination);
-    osc.start(t); osc.stop(t + 0.1);
-
-    const espuma = ruido(c, 1.2);
-    const filtro = c.createBiquadFilter();
-    filtro.type = 'highpass';
-    filtro.frequency.value = 5000;
-    const ge = c.createGain();
-    ge.gain.setValueAtTime(0.0001, t + 0.05);
-    ge.gain.exponentialRampToValueAtTime(0.07, t + 0.15);
-    ge.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
-    espuma.connect(filtro).connect(ge).connect(c.destination);
-    espuma.start(t + 0.05);
-};
 
 /* ==========================================================================
    DIBUJOS QUE SE MONTAN DESDE AQUÍ
@@ -263,114 +137,10 @@ const montarAmbiente = () => {
     window.addEventListener('resize', alRedimensionar);
 };
 
-/** Una lluvia de estrellas fugaces desde un punto (la estrella grande) */
-const estrellasFugaces = (desde?: DOMRect) => {
-    if (sinMovimiento()) return;
-    const grupo = document.createElement('div');
-    grupo.className = 'nv-fugaces';
-    grupo.setAttribute('aria-hidden', 'true');
-    const x = desde ? desde.left + desde.width / 2 : window.innerWidth * 0.2;
-    const y = desde ? desde.top + desde.height / 2 : window.innerHeight * 0.2;
-    const lejos = Math.max(window.innerWidth, window.innerHeight);
-    for (let i = 0; i < 7; i++) {
-        const f = document.createElement('i');
-        f.className = 'nv-fugaz';
-        const angulo = azar(0.12, 0.62); // hacia abajo a la derecha
-        const largo = lejos * azar(0.45, 0.8);
-        f.style.setProperty('--x', `${x + azar(-30, 30)}px`);
-        f.style.setProperty('--y', `${y + azar(-20, 20)}px`);
-        f.style.setProperty('--giro', `${(angulo * 180) / Math.PI}deg`);
-        f.style.setProperty('--largo', `${largo}px`);
-        f.style.setProperty('--retraso', `${i * 90}ms`);
-        grupo.appendChild(f);
-    }
-    document.body.appendChild(grupo);
-    setTimeout(() => grupo.remove(), 2200);
-};
-
-/** Confeti de colores y estrellas que sale de un punto */
-const confeti = (x: number, y: number, piezas = 36) => {
-    if (sinMovimiento()) return;
-    const grupo = document.createElement('div');
-    grupo.className = 'nv-confeti';
-    grupo.setAttribute('aria-hidden', 'true');
-    grupo.style.setProperty('--x', `${x}px`);
-    grupo.style.setProperty('--y', `${y}px`);
-    const lejos = Math.max(window.innerWidth, window.innerHeight) * 0.55;
-    for (let i = 0; i < piezas; i++) {
-        const p = document.createElement('i');
-        const angulo = azar(0, Math.PI * 2);
-        const fuerza = lejos * azar(0.35, 1);
-        p.className = i % 4 === 0 ? 'nv-confeti-estrella' : 'nv-confeti-papel';
-        p.style.setProperty('--dx', `${Math.cos(angulo) * fuerza}px`);
-        p.style.setProperty('--dy', `${Math.sin(angulo) * fuerza * 0.8 + 140}px`);
-        p.style.setProperty('--giro', `${azar(-540, 540)}deg`);
-        p.style.setProperty('--color', COLORES[i % COLORES.length]);
-        p.style.setProperty('--retraso', `${azar(0, 120)}ms`);
-        if (i % 4 === 0) p.innerHTML = `<svg viewBox="-11 -11 22 22"><path d="${ESTRELLA5}" /></svg>`;
-        grupo.appendChild(p);
-    }
-    document.body.appendChild(grupo);
-    setTimeout(() => grupo.remove(), 2600);
-};
-
-/* ==========================================================================
-   LA SORPRESA GORDA (la puerta): un regalo que se abre
-   ========================================================================== */
-const regaloGrande = `<svg viewBox="-110 -130 220 240" aria-hidden="true">
-    <g class="nv-sorpresa-caja">
-        <rect x="-80" y="-20" width="160" height="120" rx="4" fill="#C8202F" stroke="#F4EBDD" stroke-width="4" />
-        <rect x="-14" y="-20" width="28" height="120" fill="#F2C14E" />
-        <path d="M -80,-20 L 80,-20" stroke="#8E1526" stroke-width="6" />
-    </g>
-    <g class="nv-sorpresa-tapa">
-        <rect x="-90" y="-50" width="180" height="34" rx="4" fill="#D7263D" stroke="#F4EBDD" stroke-width="4" />
-        <rect x="-14" y="-50" width="28" height="34" fill="#F2C14E" />
-        <path d="M 0,-50 C -22,-96 -64,-86 -40,-58 C -26,-46 -12,-48 0,-50 C 12,-48 26,-46 40,-58 C 64,-86 22,-96 0,-50 Z" fill="#F2C14E" stroke="#B88A1E" stroke-width="2" />
-    </g>
-</svg>`;
-
-let sorprendiendo = false;
-const sorpresaGorda = (alAcabar: () => void) => {
-    sorprendiendo = true;
-    const capa = document.createElement('div');
-    capa.className = 'nv-sorpresa';
-    capa.setAttribute('role', 'presentation');
-    capa.innerHTML = `<div class="nv-sorpresa-rayos"></div><div class="nv-sorpresa-regalo">${regaloGrande}</div><p class="nv-sorpresa-texto">${texto('feliz')}</p>`;
-    document.body.appendChild(capa);
-    villancico();
-    setTimeout(() => confeti(window.innerWidth / 2, window.innerHeight * 0.42, 54), 620);
-    setTimeout(() => {
-        capa.classList.add('nv-sorpresa-sale');
-        alAcabar();
-        setTimeout(() => { capa.remove(); sorprendiendo = false; }, 420);
-    }, 1900);
-};
-
-let dejarPasar = false;
-const interceptarPuerta = (e: Event) => {
-    if (dejarPasar || !enNavidad() || pagina() !== 'inicio') return;
-    const puerta = (e.target as Element | null)?.closest?.('#door-group');
-    if (!puerta) return;
-    if (e instanceof KeyboardEvent && e.key !== 'Enter' && e.key !== ' ') return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    if (sorprendiendo) return;
-    if (sinMovimiento()) return abrir(puerta);
-    sorpresaGorda(() => abrir(puerta));
-};
-const abrir = (puerta: Element) => {
-    dejarPasar = true;
-    puerta.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    dejarPasar = false;
-};
-document.addEventListener('click', interceptarPuerta, true);
-document.addEventListener('keydown', interceptarPuerta, true);
-
 /* ==========================================================================
    EL TEJADO EN EL MÓVIL
    Sin ratón no hay hover: el toque abre el tejado, salen las estrellas y
-   suenan los cascabeles, y después se entra en clientes.
+   después se entra en clientes.
    ========================================================================== */
 let tejadoEnCurso = false;
 document.addEventListener('click', (e) => {
@@ -382,7 +152,6 @@ document.addEventListener('click', (e) => {
     if (tejadoEnCurso) return;
     tejadoEnCurso = true;
     tejado.classList.add('nv-abierto');
-    cascabeles(audio());
     const estado = document.getElementById('nav-status');
     if (estado) { estado.textContent = texto('tejadoRegalos'); estado.classList.add('active'); }
     const destino = tejado.getAttribute('href') ?? '/';
@@ -390,43 +159,25 @@ document.addEventListener('click', (e) => {
 }, true);
 
 /* ==========================================================================
-   LA PORTADA: sello con el sonido, la estrella, el tejado y el cava
+   LA PORTADA: el sello de la edición y la estrella
    ========================================================================== */
-const iconoSonido = (si: boolean) => si
-    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" class="nv-onda-sonido" /></svg>'
-    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" class="nv-onda-sonido" /></svg>';
-
 const montarPortada = () => {
     if (!enNavidad() || pagina() !== 'inicio') return;
 
     const marca = document.querySelector('.branding');
     if (marca && !marca.querySelector('.nv-sello')) {
-        const sello = document.createElement('button');
-        sello.type = 'button';
+        const sello = document.createElement('p');
         sello.className = 'nv-sello';
-        const pintar = () => {
-            const si = conSonido();
-            sello.setAttribute('aria-pressed', String(si));
-            sello.setAttribute('aria-label', `${texto('edicion')}. ${texto('sonidoAria')}`);
-            sello.title = si ? texto('sonidoSi') : texto('sonidoNo');
-            sello.innerHTML = `<span class="nv-sello-texto">${texto('edicion')}</span>${iconoSonido(si)}`;
-        };
-        pintar();
-        sello.addEventListener('click', () => {
-            guardarSonido(!conSonido());
-            pintar();
-            if (conSonido()) cascabeles(audio(), undefined, 6);
-        });
+        sello.textContent = texto('edicion');
         marca.querySelector('.tagline')?.after(sello);
     }
 
+    // La estrella: al tocarla brilla un momento y te desea suerte
     const estrella = document.getElementById('nv-estrella');
     const pedirDeseo = () => {
-        destello();
         estrella?.classList.remove('nv-brillando');
         void (estrella as unknown as HTMLElement | null)?.getBoundingClientRect();
         estrella?.classList.add('nv-brillando');
-        estrellasFugaces(estrella?.getBoundingClientRect());
         const estado = document.getElementById('nav-status');
         if (estado) {
             estado.textContent = texto('deseo');
@@ -440,21 +191,6 @@ const montarPortada = () => {
     estrella?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pedirDeseo(); }
     });
-
-    // Con ratón: cascabeles al levantar el tejado y corcho al acercarse al
-    // cava, si el sonido ya está despierto (alguien pulsó algo antes) y sin
-    // repetirlo a cada roce
-    const unaVezCada = (ms: number, fn: () => void) => {
-        let ultimo = 0;
-        return () => {
-            const ahora = Date.now();
-            if (ahora - ultimo < ms) return;
-            ultimo = ahora;
-            fn();
-        };
-    };
-    document.getElementById('roof-clients-link')?.addEventListener('mouseenter', unaVezCada(2500, () => cascabeles(audioYaDespierto())));
-    document.getElementById('wine-group')?.addEventListener('mouseenter', unaVezCada(4000, () => descorche(audioYaDespierto())));
 };
 
 /* ==========================================================================

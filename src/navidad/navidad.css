@@ -64,12 +64,11 @@ html[data-pagina="portfolio"] .nv-ambiente { z-index: 125; }
 .nv-resplandor { filter: blur(3px); }
 .nv-guirnalda svg { display: block; overflow: visible; }
 
-/* Las bombillas parpadean por turnos, como una tira de verdad */
-.nv-parpadea { animation: nvParpadeo 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * -0.37s); }
+/* Las bombillas brillan despacio y a destiempo, sin parpadear */
+.nv-parpadea { animation: nvParpadeo 6s ease-in-out infinite; animation-delay: calc(var(--i) * -1.3s); }
 @keyframes nvParpadeo {
     0%, 100% { opacity: 1; }
-    45%      { opacity: 0.35; }
-    55%      { opacity: 0.35; }
+    50%      { opacity: 0.72; }
 }
 
 .nv-copo {
@@ -93,47 +92,6 @@ html[data-pagina="portfolio"] .nv-ambiente { z-index: 125; }
     100% { transform: translate(0, 104vh); }
 }
 
-/* --- Estrellas fugaces desde la estrella grande --- */
-.nv-fugaces { position: fixed; inset: 0; z-index: 9000; pointer-events: none; }
-.nv-fugaz {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    width: 120px;
-    height: 2px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, rgba(255, 241, 214, 0), #FFF1D6 70%, #fff);
-    box-shadow: 0 0 8px #FFE29A;
-    transform-origin: left center;
-    opacity: 0;
-    animation: nvFugaz 1.25s cubic-bezier(0.3, 0.5, 0.6, 1) forwards var(--retraso);
-}
-@keyframes nvFugaz {
-    0%   { transform: rotate(var(--giro)) translateX(0) scaleX(0.2); opacity: 0; }
-    15%  { opacity: 1; }
-    80%  { opacity: 1; }
-    100% { transform: rotate(var(--giro)) translateX(var(--largo)) scaleX(1); opacity: 0; }
-}
-
-/* --- Confeti --- */
-.nv-confeti { position: fixed; inset: 0; z-index: 10001; pointer-events: none; }
-.nv-confeti > i {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    opacity: 0;
-    animation: nvConfeti 2.2s cubic-bezier(0.2, 0.7, 0.4, 1) forwards var(--retraso);
-}
-.nv-confeti-papel { width: 9px; height: 14px; margin: -7px 0 0 -4px; background: var(--color); border-radius: 2px; }
-.nv-confeti-estrella { width: 18px; height: 18px; margin: -9px 0 0 -9px; }
-.nv-confeti-estrella svg { display: block; width: 100%; height: 100%; fill: var(--color); filter: drop-shadow(0 0 3px var(--color)); }
-@keyframes nvConfeti {
-    0%   { transform: translate(0, 0) rotate(0) scale(0.4); opacity: 0; }
-    8%   { opacity: 1; }
-    75%  { opacity: 1; }
-    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--giro)) scale(1); opacity: 0; }
-}
-
 /* ==========================================================================
    2. PIEZAS COMUNES: nieve, abetos, regalos, velas
    ========================================================================== */
@@ -149,7 +107,7 @@ html[data-pagina="portfolio"] .nv-ambiente { z-index: 125; }
 .nv-cinta { fill: none; stroke: var(--nv-oro-claro); stroke-width: 2.2; }
 .nv-caja.nv-oro + .nv-cinta { stroke: var(--nv-rojo); }
 .nv-lazo { fill: var(--nv-oro-claro); stroke: #B88A1E; stroke-width: 0.6; }
-.nv-bombilla { animation: nvParpadeo 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * -0.41s); }
+.nv-bombilla { animation: nvParpadeo 6s ease-in-out infinite; animation-delay: calc(var(--i) * -1.1s); }
 .nv-espumillon { fill: none; stroke: var(--nv-oro); stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 2 3; }
 @keyframes nvRespira {
     0%, 100% { opacity: 0.7; }
@@ -285,10 +243,10 @@ html[data-tema="navidad"] #roof-clients-link.nv-abierto .hint { transform: trans
 .nv-estrella:focus-visible .nv-estrella-cuerpo { stroke: var(--nv-rojo-claro); stroke-width: 2.4; }
 .nv-estrella-centro { fill: #fff; }
 .nv-estrella-halo { animation: nvRespira 4s ease-in-out infinite; }
-.nv-estrella.nv-brillando { animation: nvDestello 0.9s ease-out; }
+.nv-estrella.nv-brillando { animation: nvDestello 1.2s ease-in-out; }
 @keyframes nvDestello {
     0%   { transform: scale(1.1) rotate(8deg); }
-    35%  { transform: scale(1.45) rotate(55deg); filter: brightness(1.4); }
+    40%  { transform: scale(1.22) rotate(8deg); filter: brightness(1.25); }
     100% { transform: scale(1.1) rotate(8deg); }
 }
 
@@ -332,9 +290,9 @@ html[data-tema="navidad"] .window-glass { fill: #FFC96B; }
 html[data-tema="navidad"]:root #window-group:hover .window-glass,
 html[data-tema="navidad"]:root #window-group:focus-visible .window-glass { fill: #FFDA94; }
 .nv-abeto-ventana { fill: #1F5A39; stroke: none; }
-.nv-luz-ventana { opacity: 0.35; }
+.nv-luz-ventana { opacity: 0.35; transition: opacity 0.6s ease; }
 #window-group:hover .nv-luz-ventana,
-#window-group:focus-visible .nv-luz-ventana { opacity: 1; animation: nvParpadeo 1.2s ease-in-out infinite; animation-delay: calc(var(--i) * -0.24s); }
+#window-group:focus-visible .nv-luz-ventana { opacity: 1; }
 .nv-punta-ventana { opacity: 0.5; transition: opacity 0.3s; }
 #window-group:hover .nv-punta-ventana,
 #window-group:focus-visible .nv-punta-ventana { opacity: 1; }
@@ -418,32 +376,20 @@ html[data-tema="navidad"][data-pagina="inicio"] .branding h1 {
 }
 html[data-tema="navidad"][data-pagina="inicio"] .tagline { opacity: 0.7; }
 
-/* El sello de la edición, que además enciende o apaga el sonido */
+/* El sello de la edición: una etiqueta, sin más */
 .nv-sello {
-    pointer-events: auto;
-    display: flex;
     width: fit-content;
-    align-items: center;
-    gap: 10px;
     margin: 0 auto 0.9rem;
-    padding: 4px 12px 4px 16px;
-    min-height: 36px;
-    border: 1.5px dashed rgba(242, 193, 78, 0.75);
+    padding: 5px 16px;
+    border: 1.5px dashed rgba(242, 193, 78, 0.6);
     border-radius: 999px;
-    background: rgba(215, 38, 61, 0.14);
     color: var(--nv-oro-claro);
     font-family: 'Mountains of Christmas', 'Space Mono', cursive;
     font-weight: 700;
     font-size: 1.15rem;
     letter-spacing: 0.06em;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s, transform 0.3s var(--ease-spring);
+    line-height: 1.2;
 }
-.nv-sello:hover, .nv-sello:focus-visible { background: var(--nv-rojo); color: var(--nv-crema); transform: rotate(-2deg) scale(1.04); }
-.nv-sello:focus-visible { outline: 2px solid var(--nv-oro); outline-offset: 3px; }
-.nv-sello svg { width: 18px; height: 18px; fill: currentColor; }
-.nv-sello .nv-onda-sonido { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-.nv-sello[aria-pressed="false"] .nv-sello-texto { opacity: 0.75; }
 
 /* --- Móvil: la estrella entra en el recorte, el jardín se queda fuera --- */
 @media (max-width: 560px) {
@@ -451,7 +397,7 @@ html[data-tema="navidad"][data-pagina="inicio"] .tagline { opacity: 0.7; }
     .nv-jardin { display: none; }
     .nv-regalos-botella { transform: translate(128px, 0); }
     .nv-nieve-suelo { transform: translate(-50px, 15px) scaleX(0.514); transform-origin: 500px 420px; }
-    .nv-sello { font-size: 1rem; margin-bottom: 0.6rem; min-height: 32px; padding: 2px 10px 2px 14px; }
+    .nv-sello { font-size: 1rem; margin-bottom: 0.6rem; padding: 3px 14px; }
     html[data-tema="navidad"] #roof-clients-link.nv-abierto .hint { transform: translate(40px, 125px); opacity: 0; }
 }
 @media (max-height: 520px) and (min-width: 561px) {
@@ -459,81 +405,7 @@ html[data-tema="navidad"][data-pagina="inicio"] .tagline { opacity: 0.7; }
 }
 
 /* ==========================================================================
-   5. LA SORPRESA DE LA PUERTA: un regalo que se abre
-   ========================================================================== */
-.nv-sorpresa {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at 50% 45%, rgba(26, 46, 72, 0.7), rgba(4, 9, 16, 0.96) 70%);
-    animation: nvSorpresaFondo 0.4s ease-out forwards;
-    pointer-events: auto;
-    overflow: hidden;
-}
-.nv-sorpresa-rayos {
-    position: absolute;
-    left: 50%;
-    top: 42%;
-    width: 160vmax;
-    height: 160vmax;
-    margin: -80vmax 0 0 -80vmax;
-    background: repeating-conic-gradient(rgba(255, 226, 154, 0.16) 0 6deg, transparent 6deg 18deg);
-    mask-image: radial-gradient(circle, #000 0, transparent 55%);
-    -webkit-mask-image: radial-gradient(circle, #000 0, transparent 55%);
-    opacity: 0;
-    animation: nvRayos 1.9s ease-out forwards;
-}
-.nv-sorpresa-regalo { position: relative; width: min(52vw, 46vh); animation: nvRegaloCae 1.9s cubic-bezier(0.3, 1.3, 0.5, 1) forwards; }
-.nv-sorpresa-regalo svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.5)); }
-.nv-sorpresa-tapa { transform-box: fill-box; transform-origin: 30% 100%; animation: nvTapa 1.9s ease-in forwards; }
-.nv-sorpresa-texto {
-    position: relative;
-    margin: 1vh 0 0;
-    font-family: 'Mountains of Christmas', 'Space Mono', cursive;
-    font-weight: 700;
-    font-size: clamp(2.6rem, 11vw, 7rem);
-    line-height: 1;
-    color: var(--nv-oro-claro);
-    text-shadow: 0 0 28px rgba(242, 193, 78, 0.75), 0 5px 0 var(--nv-rojo-osc);
-    opacity: 0;
-    animation: nvSorpresaTexto 1.9s ease-out forwards;
-}
-.nv-sorpresa-sale { animation: nvSorpresaVete 0.42s ease-in forwards; }
-@keyframes nvSorpresaFondo { from { opacity: 0; } to { opacity: 1; } }
-@keyframes nvRegaloCae {
-    0%   { transform: translateY(-70vh) rotate(-8deg); }
-    22%  { transform: translateY(0) rotate(3deg); }
-    28%  { transform: translateY(-14px) rotate(-2deg); }
-    34%  { transform: translateY(0) rotate(1deg) scale(1.04, 0.96); }
-    40%  { transform: translateY(0) rotate(-1deg) scale(1); }
-    100% { transform: translateY(0) rotate(0) scale(1.02); }
-}
-@keyframes nvTapa {
-    0%, 30% { transform: translate(0, 0) rotate(0); opacity: 1; }
-    34%     { transform: translate(0, -10px) rotate(-6deg); }
-    48%     { transform: translate(-60px, -220px) rotate(-45deg); opacity: 1; }
-    65%, 100% { transform: translate(-120px, -420px) rotate(-80deg); opacity: 0; }
-}
-@keyframes nvRayos {
-    0%, 30% { opacity: 0; transform: rotate(0) scale(0.4); }
-    45%     { opacity: 1; }
-    100%    { opacity: 0.8; transform: rotate(40deg) scale(1); }
-}
-@keyframes nvSorpresaTexto {
-    0%, 36% { transform: scale(0.3) translateY(20px); opacity: 0; }
-    50%     { transform: scale(1.12) translateY(0); opacity: 1; }
-    100%    { transform: scale(1); opacity: 1; }
-}
-@keyframes nvSorpresaVete {
-    to { opacity: 0; transform: scale(1.3); }
-}
-
-/* ==========================================================================
-   6. LA CARTA (servicios): pizarra verde, garabatos de tiza y una vela
+   5. LA CARTA (servicios): pizarra verde, garabatos de tiza y una vela
    ========================================================================== */
 html[data-tema="navidad"][data-pagina="servicios"] {
     --ink-red: var(--nv-rojo-claro);
@@ -589,7 +461,7 @@ html[data-tema="navidad"][data-pagina="servicios"] .menu-header h1::after {
 }
 
 /* ==========================================================================
-   7. EL ARCHIVO (portfolio): el salón de escucha, con árbol en el mueble
+   6. EL ARCHIVO (portfolio): el salón de escucha, con árbol en el mueble
    ========================================================================== */
 html[data-tema="navidad"][data-pagina="portfolio"] body { background-color: var(--nv-noche); }
 html[data-tema="navidad"][data-pagina="portfolio"] .indice {
@@ -621,7 +493,7 @@ html[data-tema="navidad"][data-pagina="portfolio"] .caja:focus-visible .caja-nom
 }
 
 /* ==========================================================================
-   8. CLIENTES: la barra de fiesta, con velas, árbol y regalos
+   7. CLIENTES: la barra de fiesta, con velas, árbol y regalos
    ========================================================================== */
 html[data-tema="navidad"][data-pagina="clientes"] .bar-counter {
     position: relative;
@@ -652,7 +524,7 @@ html[data-tema="navidad"][data-pagina="clientes"] .bar-counter a:focus-visible {
 }
 
 /* ==========================================================================
-   9. GALERÍA: las mesas, con vela, bola y acebo
+   8. GALERÍA: las mesas, con vela, bola y acebo
    ========================================================================== */
 html[data-tema="navidad"][data-pagina="galeria"] { --ink-red: var(--nv-rojo); }
 html[data-tema="navidad"][data-pagina="galeria"] body {
@@ -678,7 +550,7 @@ html[data-tema="navidad"][data-pagina="galeria"] body {
 }
 
 /* ==========================================================================
-   10. EL TICKET (contacto): papel de regalo, sello rojo y turrón de regalo
+   9. EL TICKET (contacto): papel de regalo, sello rojo y turrón de regalo
    ========================================================================== */
 html[data-tema="navidad"][data-pagina="contacto"] {
     --ink-dark: #0E1C2E;
@@ -709,12 +581,10 @@ html[data-tema="navidad"][data-pagina="contacto"] .ticket-header h1::after {
 }
 
 /* ==========================================================================
-   11. MOVIMIENTO REDUCIDO: el disfraz se queda, el movimiento no
+   10. MOVIMIENTO REDUCIDO: el disfraz se queda, el movimiento no
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
     .nv-nevada,
-    .nv-fugaces,
-    .nv-confeti,
     .nv-trineo-ruta,
     .nv-sale { display: none; }
     .nv-parpadea, .nv-bombilla, .nv-llama, .nv-vela-halo, .nv-estrellitas circle,

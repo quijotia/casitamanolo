@@ -20,6 +20,24 @@ import Idiomas from '../../components/Idiomas.astro';
 export function getStaticPaths() { return rutasDeIdioma(); }
 const { idioma } = Astro.props as { idioma: Idioma };
 const T = textos[idioma];
+
+// --- El índice del archivo -------------------------------------------------
+// Los discos de cada caja, en el orden en que salen en los estantes
+const discosDe = (est: (typeof estaciones)[number]) => [...est.izquierda, ...est.derecha];
+const cuantos = (n: number) => `${n} ${n === 1 ? T.portfolio.disco : T.portfolio.discos}`;
+// ¿Un color es claro? Para escribir encima en tinta o en blanco
+const esClaro = (hex: string) => {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 150;
+};
+// El color de cada caja: el de la galleta de sus discos
+const colorCaja: Record<string, string> = {
+    duelo: '#c9a24a', tarara: '#b3141c', airbnb: '#ff5a5f', paula: '#E2009F', publicidad: '#019df4', obra: '#7d8f86',
+};
+const letras = 'ABCDEFGHIJKL';
+// La tienda reparte las secciones en dos baldas
+const mitad = Math.ceil(estaciones.length / 2);
+const baldas = [estaciones.slice(0, mitad), estaciones.slice(mitad)];
 ---
 
 <!DOCTYPE html>
@@ -38,6 +56,17 @@ const T = textos[idioma];
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <Temas />
     <ClientRouter />
+    <!-- PRUEBAS: ?indice=a (gramola) · ?indice=b (tienda) · ?indice=actual -->
+    <script is:inline>
+        (function () {
+            var p = new URL(location.href).searchParams.get('indice');
+            try {
+                if (p) sessionStorage.setItem('casita-indice', p);
+                p = sessionStorage.getItem('casita-indice') || p;
+            } catch (e) {}
+            document.documentElement.setAttribute('data-indice', p === 'b' || p === 'actual' ? p : 'a');
+        })();
+    </script>
 
     <style>
         /* ========================================================
@@ -334,6 +363,281 @@ const T = textos[idioma];
             border-radius: 0 0 40px 40px / 0 0 18px 18px;
             background: linear-gradient(180deg, #f1d896 0%, var(--laton) 40%, var(--laton-oscuro) 100%);
             box-shadow: 0 2px 3px rgba(0,0,0,0.5), inset 0 -2px 0 rgba(0,0,0,0.2);
+        }
+
+        /* ========================================================
+           PRUEBAS: qué propuesta del índice se ve (?indice=a|b|actual)
+           ======================================================== */
+        html:not([data-indice="actual"]) .mueble { display: none; }
+        html:not([data-indice="b"]) .tienda { display: none; }
+        html[data-indice="b"] .gramola,
+        html[data-indice="actual"] .gramola { display: none; }
+        html[data-indice="b"] .indice-panel { width: min(1060px, 100%); }
+
+        /* ========================================================
+           PROPUESTA A · LA GRAMOLA
+           El panel de selección de una gramola de bar: arco cromado,
+           mueble lacado, luz cálida detrás del cristal y una tira de
+           título por cada tipo de trabajo, con su tecla de selección.
+           La tira dice lo que hay dentro: el primer disco arriba, el
+           nombre en la banda de color y el siguiente abajo.
+           ======================================================== */
+        .gramola {
+            --cromo-claro: #eef2f4;
+            --cromo: #a9b1b7;
+            --cromo-oscuro: #4d5458;
+            position: relative;
+            width: min(760px, 100%);
+            margin: 0 auto 38px;
+            padding: 22px 26px 18px;
+            border-radius: 380px 380px 22px 22px / 150px 150px 22px 22px;
+            background:
+                radial-gradient(ellipse 60% 35% at 50% 0%, rgba(255, 255, 255, 0.14), transparent 70%),
+                linear-gradient(180deg, #741d22 0%, #561418 45%, #2c080a 100%);
+            box-shadow:
+                inset 0 0 0 2px var(--cromo-oscuro),
+                inset 0 0 0 5px var(--cromo-claro),
+                inset 0 0 0 7px var(--cromo),
+                0 24px 50px rgba(0, 0, 0, 0.55),
+                0 60px 90px rgba(0, 0, 0, 0.35);
+        }
+        /* Los dos tubos de luz de los lados */
+        .gramola::before,
+        .gramola::after {
+            content: ''; position: absolute; top: 34%; bottom: 96px; width: 9px;
+            border-radius: 5px;
+            background: linear-gradient(180deg, #ffe3a3 0%, #ff8f45 50%, #ffe3a3 100%);
+            box-shadow: 0 0 10px rgba(255, 150, 60, 0.75), 0 0 24px rgba(255, 120, 40, 0.35);
+        }
+        .gramola::before { left: 9px; }
+        .gramola::after { right: 9px; }
+
+        .gramola-cristal {
+            position: relative;
+            padding: 58px 22px 22px;
+            border-radius: 340px 340px 10px 10px / 128px 128px 10px 10px;
+            background: radial-gradient(ellipse 85% 75% at 50% 30%, #fff8e4 0%, #ffe4ab 48%, #e5b25f 100%);
+            box-shadow:
+                inset 0 0 0 3px var(--cromo-claro),
+                inset 0 0 0 5px var(--cromo-oscuro),
+                inset 0 10px 34px rgba(120, 60, 0, 0.35),
+                0 0 40px rgba(255, 190, 100, 0.3);
+        }
+        /* El reflejo del cristal */
+        .gramola-cristal::after {
+            content: ''; position: absolute; inset: 5px; border-radius: inherit; pointer-events: none;
+            background: linear-gradient(112deg, rgba(255, 255, 255, 0.4) 0 10%, transparent 26%, transparent 74%, rgba(255, 255, 255, 0.14) 86%, transparent 94%);
+        }
+        /* Al abrir el archivo, la gramola se enciende */
+        .indice.is-open .gramola-cristal { animation: gramolaEnciende 1.1s ease-out both; }
+        @keyframes gramolaEnciende {
+            0%   { filter: brightness(0.4) saturate(0.6); }
+            55%  { filter: brightness(1.08) saturate(1.05); }
+            100% { filter: none; }
+        }
+
+        .gramola-tiras {
+            position: relative; z-index: 1;
+            list-style: none; margin: 0; padding: 0;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px;
+        }
+        .tira {
+            display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 9px;
+            width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
+            font-family: 'Space Mono', monospace; text-align: center; color: #1d1a16;
+        }
+        .tira:focus-visible { outline: none; }
+
+        /* La tecla de selección, de cromo: se hunde al señalar la tira */
+        .tira-tecla {
+            display: grid; place-items: center;
+            width: 34px; height: 34px; border-radius: 50%;
+            font-weight: 700; font-size: 0.92rem; color: #2a2f33;
+            background: radial-gradient(circle at 35% 30%, #ffffff, #cbd2d6 55%, #7c858b);
+            box-shadow: 0 2px 0 #59616a, 0 3px 7px rgba(0, 0, 0, 0.35), inset 0 -2px 2px rgba(0, 0, 0, 0.15);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, color 0.2s ease;
+        }
+
+        .tira-papel {
+            display: block; overflow: hidden;
+            border-radius: 2px;
+            background: #fdf9ee;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18), 0 3px 8px rgba(110, 50, 0, 0.18);
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.25s ease;
+        }
+        .tira-linea {
+            display: block; padding: 5px 10px;
+            font-size: 0.74rem; line-height: 1.3; color: #2b2620;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .tira-banda {
+            display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+            padding: 4px 10px;
+            background: var(--banda); color: var(--banda-tinta);
+        }
+        .tira-nombre {
+            display: inline-block;
+            font-weight: 700; font-size: 1rem; line-height: 1.2;
+            text-transform: lowercase;
+        }
+        .tira-nombre::first-letter { text-transform: uppercase; }
+        .tira-cuenta { font-size: 0.68rem; white-space: nowrap; opacity: 0.85; }
+
+        .tira:hover .tira-papel,
+        .tira:focus-visible .tira-papel {
+            transform: translateY(-2px);
+            box-shadow: 0 0 0 2px var(--banda), 0 8px 18px rgba(110, 50, 0, 0.32), 0 0 24px rgba(255, 255, 255, 0.55);
+        }
+        .tira:focus-visible .tira-papel {
+            box-shadow: 0 0 0 2px #fdf9ee, 0 0 0 5px #1d1a16, 0 8px 18px rgba(110, 50, 0, 0.32);
+        }
+        .tira:hover .tira-tecla,
+        .tira:focus-visible .tira-tecla {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 #59616a, 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.28);
+            color: #a3241a;
+        }
+
+        /* La rejilla del altavoz, abajo */
+        .gramola-rejilla {
+            height: 50px; margin: 16px 34px 0;
+            border-radius: 10px;
+            background:
+                repeating-linear-gradient(90deg, transparent 0 8px, rgba(0, 0, 0, 0.5) 8px 10px),
+                linear-gradient(180deg, #eef2f4, #8f989e);
+            box-shadow: inset 0 0 0 2px var(--cromo-oscuro), inset 0 7px 12px rgba(0, 0, 0, 0.35);
+        }
+
+        /* ========================================================
+           PROPUESTA B · LA TIENDA DE DISCOS
+           Una pared de tienda con dos baldas de abedul. Cada sección
+           pone de frente la carátula de su primer disco y el resto de
+           canto, con su color y su título: el grosor ya dice cuánto hay.
+           La etiqueta va pegada con celo al canto de la balda.
+           ======================================================== */
+        .tienda {
+            --alto: 150px;
+            --lomo: 18px;
+            --abedul: #e3cba2;
+            --abedul-canto: #c4a372;
+            position: relative;
+            margin: 0 auto 34px;
+            padding: 36px 24px 6px;
+            border-radius: 8px;
+            background:
+                radial-gradient(ellipse 55% 55% at 50% -12%, rgba(255, 232, 190, 0.17), transparent 70%),
+                repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 96px),
+                #0e1d19;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 24px 44px rgba(0, 0, 0, 0.45);
+        }
+        .balda {
+            list-style: none; margin: 0 0 36px; padding: 0;
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; row-gap: 30px;
+        }
+
+        .seccion { position: relative; padding: 0 18px; }
+        /* El listón de la balda: uno por sección, que en fila se juntan */
+        .seccion::after {
+            content: ''; position: absolute; left: 0; right: 0; top: var(--alto); height: 14px;
+            background: linear-gradient(180deg, #f3e2c0 0 2px, var(--abedul) 2px 9px, var(--abedul-canto) 9px 100%);
+            box-shadow: 0 9px 14px rgba(0, 0, 0, 0.45);
+        }
+
+        .seccion-boton {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 0; border: 0; background: none; cursor: pointer;
+            font-family: 'Space Mono', monospace; color: inherit;
+        }
+        .seccion-boton:focus-visible { outline: none; }
+
+        .seccion-discos { display: flex; align-items: flex-end; height: var(--alto); }
+
+        /* La de frente, apoyada contra los lomos */
+        .seccion-frente {
+            position: relative; z-index: 2; flex: none;
+            width: var(--alto); height: var(--alto); margin-right: -3px;
+            background: #0b1714 center / cover no-repeat;
+            transform-origin: 50% 100%;
+            transform: rotate(-3deg);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5), 7px 10px 18px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+            transition: transform 0.4s var(--ease-spring), box-shadow 0.3s ease;
+        }
+        .seccion-frente::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(118deg, rgba(255, 255, 255, 0.18) 0 14%, transparent 40%);
+        }
+
+        /* Los lomos: el color de la galleta y el título, de abajo arriba */
+        .lomo {
+            flex: none;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            width: var(--lomo); height: calc(var(--alto) - 2px);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), transparent 32%, rgba(0, 0, 0, 0.2)), var(--color);
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.38);
+            transition: transform 0.35s var(--ease-spring);
+            transition-delay: calc(var(--k) * 22ms);
+        }
+        .lomo-titulo {
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            max-height: calc(var(--alto) - 14px);
+            font-size: 0.56rem; line-height: 1; letter-spacing: 0.02em; color: var(--tinta);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .seccion-etiqueta {
+            position: relative; display: block;
+            margin-top: 4px; min-width: 112px; padding: 6px 12px 5px;
+            background: #f6efdd; color: #1d1a16;
+            transform: rotate(-1.2deg);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        /* El trozo de celo */
+        .seccion-etiqueta::before {
+            content: ''; position: absolute; left: 50%; top: -6px; width: 40px; height: 12px; margin-left: -20px;
+            background: rgba(255, 255, 255, 0.42);
+            transform: rotate(3deg);
+        }
+        .seccion-nombre {
+            display: block; font-weight: 700; font-size: 1rem; line-height: 1.2;
+            text-transform: lowercase;
+        }
+        .seccion-nombre::first-letter { text-transform: uppercase; }
+        .seccion-cuenta { display: block; font-size: 0.64rem; color: rgba(29, 26, 22, 0.6); }
+
+        .seccion-boton:hover .seccion-frente,
+        .seccion-boton:focus-visible .seccion-frente { transform: translateY(-12px) rotate(0deg); }
+        .seccion-boton:hover .lomo,
+        .seccion-boton:focus-visible .lomo { transform: translateY(-6px); }
+        .seccion-boton:hover .seccion-etiqueta,
+        .seccion-boton:focus-visible .seccion-etiqueta { transform: rotate(0deg); background-color: #fffaf0; }
+        .seccion-boton:focus-visible .seccion-etiqueta { box-shadow: 0 0 0 3px var(--accent-color), 0 2px 5px rgba(0, 0, 0, 0.4); }
+
+        @media (max-width: 680px) {
+            .gramola { padding: 14px 14px 12px; border-radius: 220px 220px 16px 16px / 80px 80px 16px 16px; }
+            .gramola::before, .gramola::after { display: none; }
+            .gramola-cristal { padding: 40px 10px 12px; border-radius: 200px 200px 8px 8px / 70px 70px 8px 8px; }
+            .gramola-tiras { grid-template-columns: 1fr; gap: 8px; }
+            .tira { grid-template-columns: 30px minmax(0, 1fr); gap: 7px; }
+            .tira-tecla { width: 30px; height: 30px; font-size: 0.82rem; }
+            .tira-linea { padding: 4px 8px; font-size: 0.7rem; }
+            .tira-nombre { font-size: 0.94rem; }
+            .gramola-rejilla { height: 32px; margin: 12px 20px 0; }
+
+            .tienda { --alto: 84px; --lomo: 12px; padding: 24px 6px 2px; }
+            .indice-panel { padding-bottom: 64px; }
+            .balda { margin-bottom: 22px; row-gap: 22px; }
+            .seccion { padding: 0 9px; }
+            .seccion::after { height: 10px; }
+            .lomo-titulo { display: none; }
+            .seccion-etiqueta { min-width: 84px; padding: 4px 8px 4px; }
+            .seccion-nombre { font-size: 0.86rem; }
+            .seccion-cuenta { font-size: 0.58rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .indice.is-open .gramola-cristal { animation: none; }
+            .tira-papel, .tira-tecla, .seccion-frente, .lomo, .seccion-etiqueta { transition: none; }
         }
 
         .indice-cerrar {
@@ -1041,6 +1345,70 @@ const T = textos[idioma];
                     </ul>
                 </div>
 
+                <!-- PROPUESTA A: LA GRAMOLA -->
+                <div class="gramola">
+                    <div class="gramola-cristal">
+                        <ul class="gramola-tiras">
+                            {estaciones.map((est, i) => {
+                                const discos = discosDe(est);
+                                const color = colorCaja[est.tema] ?? '#c9a24a';
+                                const abajo = discos.length === 1
+                                    ? t(discos[0].detalle, idioma)
+                                    : discos.length === 2
+                                        ? t(discos[1].titulo, idioma)
+                                        : `${t(discos[1].titulo, idioma)} ${T.portfolio.masDiscos.replace('{n}', String(discos.length - 2))}`;
+                                return (
+                                    <li>
+                                        <button type="button" class="tira" data-ir={i}
+                                                style={`--banda: ${color}; --banda-tinta: ${esClaro(color) ? '#1d1a16' : '#fffaf0'}`}>
+                                            <span class="tira-tecla" aria-hidden="true">{letras[i]}</span>
+                                            <span class="tira-papel">
+                                                <span class="tira-linea">{t(discos[0].titulo, idioma)}</span>
+                                                <span class="tira-banda">
+                                                    <span class="tira-nombre">{t(est.nombre, idioma)}</span>
+                                                    <span class="tira-cuenta">{cuantos(discos.length)}</span>
+                                                </span>
+                                                <span class="tira-linea">{abajo}</span>
+                                            </span>
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                    <div class="gramola-rejilla" aria-hidden="true"></div>
+                </div>
+
+                <!-- PROPUESTA B: LA TIENDA DE DISCOS -->
+                <div class="tienda">
+                    {baldas.map((balda, b) => (
+                        <ul class="balda">
+                            {balda.map((est, j) => {
+                                const i = b * mitad + j;
+                                const discos = discosDe(est);
+                                return (
+                                    <li class="seccion">
+                                        <button type="button" class="seccion-boton" data-ir={i}>
+                                            <span class="seccion-discos" aria-hidden="true">
+                                                <span class="seccion-frente" style={`background-image: url('${discos[0].portada}')`}></span>
+                                                {discos.slice(1).map((d, k) => (
+                                                    <span class="lomo" style={`--color: ${d.galleta}; --tinta: ${esClaro(d.galleta) ? '#1d1a16' : '#f4f1ec'}; --k: ${k}`}>
+                                                        <span class="lomo-titulo">{t(d.titulo, idioma)}</span>
+                                                    </span>
+                                                ))}
+                                            </span>
+                                            <span class="seccion-etiqueta">
+                                                <span class="seccion-nombre">{t(est.nombre, idioma)}</span>
+                                                <span class="seccion-cuenta">{cuantos(discos.length)}</span>
+                                            </span>
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    ))}
+                </div>
+
                 <button type="button" class="indice-cerrar" id="indice-cerrar">{T.portfolio.indiceCerrar}</button>
             </div>
         </div>
@@ -1161,7 +1529,8 @@ const T = textos[idioma];
                 indice?.removeAttribute('inert');
                 indice?.classList.add('is-open');
                 document.body.classList.add('indice-abierto');
-                (indice?.querySelector('.caja') as HTMLElement | null)?.focus();
+                const primero = [...(indice?.querySelectorAll<HTMLElement>('[data-ir]') ?? [])].find((el) => el.offsetParent !== null);
+                primero?.focus();
             };
             const cerrarIndice = () => {
                 indice?.classList.remove('is-open');

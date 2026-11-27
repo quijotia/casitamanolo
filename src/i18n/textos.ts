@@ -127,6 +127,7 @@ const es = {
         indiceCerrar: 'Cerrar el índice',
         disco: 'disco',
         discos: 'discos',
+        masDiscos: 'y {n} más',
     },
 
     galeria: {
@@ -322,6 +323,7 @@ const en: typeof es = {
         indiceCerrar: 'Close the index',
         disco: 'record',
         discos: 'records',
+        masDiscos: 'and {n} more',
     },
 
     galeria: {
@@ -519,6 +521,7 @@ const zh: typeof es = {
         indiceCerrar: '关闭目录',
         disco: '张唱片',
         discos: '张唱片',
+        masDiscos: '还有 {n} 张',
     },
 
     galeria: {

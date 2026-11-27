@@ -405,17 +405,6 @@ const montarMesas = () => {
         });
     }
 
-    if (pagina() === 'portfolio') {
-        const mueble = document.querySelector('.mueble');
-        if (mueble && !mueble.querySelector('.hw-mesa')) {
-            const deco = document.createElement('div');
-            deco.className = 'hw-mesa hw-mesa-mueble';
-            deco.setAttribute('aria-hidden', 'true');
-            deco.innerHTML = `<div class="hw-sitio hw-sitio-velas">${vela}${vela}</div><div class="hw-sitio hw-sitio-calabaza">${calabaza}</div>`;
-            mueble.append(deco);
-        }
-    }
-
     if (pagina() === 'servicios') {
         const repisa = document.querySelector('.chalk-ledge');
         if (repisa && !repisa.querySelector('.hw-vela')) {

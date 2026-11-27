@@ -461,36 +461,13 @@ html[data-tema="navidad"][data-pagina="servicios"] .menu-header h1::after {
 }
 
 /* ==========================================================================
-   6. EL ARCHIVO (portfolio): el salón de escucha, con árbol en el mueble
+   6. EL ARCHIVO (portfolio): el salón de escucha de noche. El índice (el
+      disco) no se disfraza: su azul es suyo todo el año.
    ========================================================================== */
 html[data-tema="navidad"][data-pagina="portfolio"] body { background-color: var(--nv-noche); }
-html[data-tema="navidad"][data-pagina="portfolio"] .indice {
-    background:
-        radial-gradient(ellipse 60% 50% at 50% 60%, rgba(255, 196, 90, 0.1), transparent 70%),
-        rgba(6, 12, 22, 0.92);
-}
-html[data-tema="navidad"][data-pagina="portfolio"] .indice-cabecera h2 {
-    font-family: 'Mountains of Christmas', 'Space Mono', cursive;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--nv-oro-claro);
-    text-shadow: 0 0 18px rgba(242, 193, 78, 0.45);
-}
-html[data-tema="navidad"][data-pagina="portfolio"] .caja:hover .caja-nombre,
-html[data-tema="navidad"][data-pagina="portfolio"] .caja:focus-visible .caja-nombre { color: var(--nv-rojo-osc); }
 
 .nv-mesa { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 .nv-sitio { position: absolute; }
-.nv-mesa-mueble { inset: auto 0 100% 0; height: 0; z-index: 2; }
-.nv-mesa-mueble .nv-sitio-arbolito { left: 20px; bottom: -6px; width: 56px; }
-.nv-mesa-mueble .nv-sitio-regalos { right: 22px; bottom: -4px; display: flex; align-items: flex-end; gap: 2px; }
-.nv-mesa-mueble .nv-regalo-suelto { width: 36px; }
-.nv-mesa-mueble .nv-regalo-suelto + .nv-regalo-suelto { width: 28px; }
-@media (max-width: 680px) {
-    .nv-mesa-mueble .nv-sitio-arbolito { width: 42px; }
-    .nv-mesa-mueble .nv-regalo-suelto { width: 28px; }
-    .nv-mesa-mueble .nv-regalo-suelto + .nv-regalo-suelto { width: 22px; }
-}
 
 /* ==========================================================================
    7. CLIENTES: la barra de fiesta, con velas, árbol y regalos

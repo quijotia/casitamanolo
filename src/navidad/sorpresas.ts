@@ -222,11 +222,6 @@ const montarMesas = () => {
         });
     }
 
-    if (pagina() === 'portfolio') {
-        decorar(document.querySelector('.mueble'), 'nv-mesa-mueble',
-            `<div class="nv-sitio nv-sitio-arbolito">${arbolito}</div><div class="nv-sitio nv-sitio-regalos">${regalo('#C8202F', '#F2C14E', -4)}${regalo('#3FA66B', '#F4EBDD', 6)}</div>`, false);
-    }
-
     if (pagina() === 'servicios') {
         const repisa = document.querySelector('.chalk-ledge');
         if (repisa && !repisa.querySelector('.nv-vela')) {

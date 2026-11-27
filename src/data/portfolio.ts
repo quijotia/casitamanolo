@@ -50,7 +50,7 @@ export type Tema = 'duelo' | 'tarara' | 'airbnb' | 'paula' | 'publicidad' | 'obr
 export interface Estacion {
   tema: Tema;
   /** Nombre en la cabecera */
-  /** Corto y en mayúsculas: es la chapa del cajón y el rótulo de arriba.
+  /** Corto y en mayúsculas: es el nombre de su pista en el disco del índice y el rótulo de arriba.
    *  El título largo del trabajo va en el disco, y la palabra de ambiente
    *  del fondo es `rotulo`. */
   nombre: Texto;

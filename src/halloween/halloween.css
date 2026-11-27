@@ -635,36 +635,12 @@ html[data-tema="halloween"][data-pagina="servicios"] .menu-header h1::after {
 }
 
 /* ==========================================================================
-   7. EL ARCHIVO (portfolio): el salón de escucha a la luz de las velas
+   7. EL ARCHIVO (portfolio): el salón de escucha de noche. El índice (el
+      disco) no se disfraza: su azul es suyo todo el año.
    ========================================================================== */
 html[data-tema="halloween"][data-pagina="portfolio"] body {
     background-color: var(--hw-noche);
 }
-html[data-tema="halloween"][data-pagina="portfolio"] .indice {
-    background:
-        radial-gradient(ellipse 60% 50% at 50% 60%, rgba(255, 122, 26, 0.12), transparent 70%),
-        rgba(10, 6, 14, 0.92);
-}
-html[data-tema="halloween"][data-pagina="portfolio"] .indice-cabecera h2 {
-    font-family: 'Creepster', 'Space Mono', cursive;
-    font-weight: 400;
-    letter-spacing: 0.25em;
-    color: var(--hw-calabaza);
-    text-shadow: 0 0 18px rgba(255, 122, 26, 0.5);
-}
-/* Velas y calabaza encima del mueble */
-.hw-mesa-mueble { inset: auto 0 100% 0; height: 0; z-index: 2; }
-.hw-mesa-mueble .hw-sitio-velas { left: 22px; bottom: -4px; display: flex; align-items: flex-end; gap: 3px; }
-.hw-mesa-mueble .hw-sitio-velas .hw-vela { width: 24px; height: 56px; }
-.hw-mesa-mueble .hw-sitio-velas .hw-vela + .hw-vela { width: 18px; height: 42px; }
-.hw-mesa-mueble .hw-sitio-calabaza { right: 26px; bottom: -6px; width: 58px; }
-@media (max-width: 680px) {
-    .hw-mesa-mueble .hw-sitio-velas .hw-vela { width: 18px; height: 42px; }
-    .hw-mesa-mueble .hw-sitio-velas .hw-vela + .hw-vela { width: 14px; height: 32px; }
-    .hw-mesa-mueble .hw-sitio-calabaza { width: 44px; }
-}
-html[data-tema="halloween"][data-pagina="portfolio"] .caja:hover .caja-nombre,
-html[data-tema="halloween"][data-pagina="portfolio"] .caja:focus-visible .caja-nombre { color: #B34700; }
 
 /* ==========================================================================
    8. CLIENTES: la barra de noche, con velas y calabaza

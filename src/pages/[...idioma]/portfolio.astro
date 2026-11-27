@@ -20,6 +20,50 @@ import Idiomas from '../../components/Idiomas.astro';
 export function getStaticPaths() { return rutasDeIdioma(); }
 const { idioma } = Astro.props as { idioma: Idioma };
 const T = textos[idioma];
+
+// --- El índice del archivo -------------------------------------------------
+// Los discos de cada caja, en el orden en que salen en los estantes
+const discosDe = (est: (typeof estaciones)[number]) => [...est.izquierda, ...est.derecha];
+const cuantos = (n: number) => `${n} ${n === 1 ? T.portfolio.disco : T.portfolio.discos}`;
+// El color de cada caja: el de la galleta de sus discos
+const colorCaja: Record<string, string> = {
+    duelo: '#c9a24a', tarara: '#b3141c', airbnb: '#ff5a5f', paula: '#E2009F', publicidad: '#019df4', obra: '#7d8f86',
+};
+
+// El disco. Cada tipo de trabajo es una pista del vinilo, de
+// fuera adentro como en un LP; su ancho depende de cuántos discos guarda,
+// con un mínimo para que todas se puedan señalar.
+const DC = { x: 560, y: 560 };            // centro del disco en el SVG (0 0 1200 1120)
+const R = 500;                            // radio del vinilo
+const rEtiqueta = 0.34 * R;
+const rSurco = 0.965 * R;
+const hueco = 7;                          // la franja lisa entre pista y pista
+const totalDiscos = estaciones.reduce((n, e) => n + discosDe(e).length, 0);
+const anchoMin = 0.055 * R;
+const reparto = rSurco - rEtiqueta - anchoMin * estaciones.length - hueco * (estaciones.length - 1);
+let bordePista = rSurco;
+const pistas = estaciones.map((est) => {
+    const ancho = anchoMin + reparto * (discosDe(est).length / totalDiscos);
+    const r = bordePista - ancho / 2;
+    bordePista -= ancho + hueco;
+    return { r, ancho };
+});
+// El brazo gira sobre un pivote fuera del disco, arriba a la derecha. Para
+// cada pista, el ángulo que deja la aguja justo encima de ella.
+const pivote = { x: DC.x + 0.9 * R, y: DC.y - 0.88 * R };
+const largoBrazo = 0.98 * R;
+const anguloPara = (radio: number) => {
+    let mejor = 0, error = Infinity;
+    for (let a = 30; a <= 150; a += 0.25) {
+        const x = pivote.x + largoBrazo * Math.cos((a * Math.PI) / 180) - DC.x;
+        const y = pivote.y + largoBrazo * Math.sin((a * Math.PI) / 180) - DC.y;
+        const e = Math.abs(Math.hypot(x, y) - radio);
+        if (e < error) { error = e; mejor = a; }
+    }
+    return mejor;
+};
+const anguloReposo = anguloPara(1.1 * R);
+const angulos = pistas.map((p) => anguloPara(p.r));
 ---
 
 <!DOCTYPE html>
@@ -36,9 +80,9 @@ const T = textos[idioma];
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
     <Temas />
     <ClientRouter />
-
     <style>
         /* ========================================================
            1. RESET & VARIABLES
@@ -94,256 +138,151 @@ const T = textos[idioma];
         .section-title-glifo { font-size: 0.9rem; letter-spacing: 0; opacity: 0.8; }
 
         /* ========================================================
-           EL ÍNDICE
-           Seis cajas en la mesa, cada una con la carátula de su trabajo.
+           EL ÍNDICE: EL DISCO
            Se entra por aquí y se vuelve cuando quieras: ir con las flechas
            de una en una hasta la sexta no era manera.
+           Aquí la casa se queda fuera: un campo de azul ultramar, un
+           vinilo negro enorme y tipografía ancha. El índice es el propio
+           disco: cada tipo de trabajo es una pista, de fuera adentro, y
+           su ancho dice cuánto guarda. Al lado, la lista de pistas como en
+           la contraportada. Al señalar una, el brazo baja hasta su surco,
+           la etiqueta enseña su carátula y el disco gira.
            ======================================================== */
         .indice {
             position: fixed; inset: 0; z-index: 120;
             display: flex; align-items: center; justify-content: center;
             padding: clamp(16px, 4vw, 40px);
-            background: rgba(5, 11, 9, 0.9);
-            backdrop-filter: blur(7px);
+            --campo: #1d2fbf;
+            --crema: #f3ead7;
+            background:
+                radial-gradient(ellipse 70% 80% at 72% 50%, #2b41e6 0%, transparent 70%),
+                linear-gradient(160deg, #1f33c9 0%, #1a2aa8 55%, #121d78 100%);
             opacity: 0; pointer-events: none;
             transition: opacity 0.45s ease;
         }
         .indice.is-open { opacity: 1; pointer-events: auto; }
+        .indice-panel { width: min(1260px, 100%); max-height: 100%; padding: 0 12px; overflow-y: auto; overflow-x: hidden; }
 
-        /* Un mueble no ocupa toda la pared: se queda en su ancho */
-        .indice-panel { width: min(880px, 100%); max-height: 100%; padding: 0 12px; overflow-y: auto; overflow-x: hidden; text-align: center; }
-
-        /* El título del archivo, como la placa del mueble: grande y en
-           minúsculas, que se lea de un vistazo y no parezca un aviso */
-        .indice-cabecera h2 {
-            margin: 0 0 10px;
-            font-family: 'Space Mono', monospace; font-weight: 700;
-            font-size: clamp(1.7rem, 4.2vw, 2.6rem);
-            letter-spacing: 0.02em; line-height: 1.05; color: var(--text-color);
-        }
-        .indice-cabecera p {
-            margin: 0 auto 34px; max-width: 40em; text-wrap: balance;
-            font-size: 0.86rem; line-height: 1.5; color: rgba(244, 241, 236, 0.62);
+        .disco-indice {
+            display: grid;
+            grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr);
+            grid-template-areas: "cabecera vinilo" "lista vinilo";
+            grid-template-rows: auto 1fr;
+            column-gap: clamp(28px, 4vw, 72px);
+            align-items: start;
+            color: var(--crema);
         }
 
-        /* ========================================================
-           LA CAJONERA
-           Un mueble de nogal con seis cajones de vinilos. Cada cajón va
-           entreabierto y por arriba asoman las fundas; en el frente lleva
-           un tarjetero de latón con su ficha, como los archivos de verdad,
-           y un tirador. Al señalarlo, el cajón sale y la funda sube.
-           ======================================================== */
-        .mueble {
-            --nogal-claro: #8a5a37;
-            --nogal: #6b4227;
-            --nogal-oscuro: #3e2414;
-            --laton: #d8b56a;
-            --laton-oscuro: #8f6b2a;
-            --ficha: #f4ecd9;
-            --tinta: #2a1c10;
-            position: relative;
-            margin: 0 0 58px;
-            padding: 16px;
-            border-radius: 6px;
-            background:
-                repeating-linear-gradient(90deg, rgba(0,0,0,0.08) 0 1px, transparent 1px 7px, rgba(255,214,170,0.03) 7px 8px, transparent 8px 15px),
-                linear-gradient(180deg, #4b2c18 0%, #3e2414 60%, #321c0f 100%);
-            box-shadow:
-                inset 0 0 0 1px rgba(0,0,0,0.5),
-                inset 0 2px 0 rgba(255, 214, 170, 0.12),
-                inset 0 -3px 0 rgba(0,0,0,0.25),
-                0 2px 4px rgba(0,0,0,0.45),
-                0 22px 40px rgba(0,0,0,0.45),
-                0 50px 80px rgba(0,0,0,0.4);
+        .di-cabecera { grid-area: cabecera; padding-top: clamp(8px, 4vh, 48px); }
+        .di-titulo {
+            margin: 0 0 14px;
+            font-family: 'Unbounded', 'Space Mono', sans-serif; font-weight: 800;
+            font-size: clamp(2.6rem, 5.6vw, 5.2rem); line-height: 0.92; letter-spacing: -0.03em;
+            color: var(--crema);
+        }
+        .di-ayuda {
+            max-width: 26em; margin: 0 0 clamp(20px, 4vh, 40px);
+            font-size: 0.86rem; line-height: 1.55; color: rgba(243, 234, 215, 0.72);
         }
 
-        /* La encimera, con su moldura: ahí iría el tocadiscos */
-        .mueble::before {
-            content: ''; position: absolute; left: -10px; right: -10px; top: -16px; height: 16px;
-            border-radius: 4px 4px 1px 1px;
-            background:
-                linear-gradient(180deg, rgba(255,214,170,0.18) 0 1px, transparent 1px),
-                linear-gradient(180deg, #5c3820 0%, #4a2c19 55%, #2f1a0d 56%, #3a2213 100%);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.45);
+        .di-lista { grid-area: lista; list-style: none; margin: 0; padding: 0; counter-reset: none; }
+        .di-lista li + li .di-pista { border-top: 1px solid rgba(243, 234, 215, 0.2); }
+        .di-pista {
+            display: grid; grid-template-columns: 2.4em minmax(0, 1fr) auto; column-gap: 12px; align-items: baseline;
+            width: 100%; padding: 13px 4px 12px; border: 0; background: none; cursor: pointer;
+            text-align: left; color: var(--crema); font-family: 'Space Mono', monospace;
+            transition: transform 0.3s var(--ease-spring);
         }
-
-        /* Las patas, torneadas y un poco abiertas */
-        .mueble::after {
-            content: ''; position: absolute; left: 6%; right: 6%; bottom: -18px; height: 18px;
-            background:
-                linear-gradient(180deg, #4a2c19, #24140a) left / 26px 100% no-repeat,
-                linear-gradient(180deg, #4a2c19, #24140a) right / 26px 100% no-repeat;
-            clip-path: polygon(0 0, 26px 0, 22px 100%, 6px 100%, 0 0, 100% 0, calc(100% - 26px) 0, calc(100% - 22px) 100%, calc(100% - 6px) 100%, 100% 0);
-            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5));
+        .di-pista:focus-visible { outline: 2px solid var(--crema); outline-offset: 2px; border-radius: 2px; }
+        .di-num {
+            align-self: center;
+            display: grid; place-items: center; width: 1.9em; height: 1.9em; border-radius: 50%;
+            font-size: 0.78rem; font-weight: 700;
+            box-shadow: inset 0 0 0 1.5px rgba(243, 234, 215, 0.55);
+            transition: background-color 0.25s ease, box-shadow 0.25s ease, color 0.25s ease;
         }
-
-        .indice-cajas {
-            list-style: none; margin: 0; padding: 0;
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-        }
-
-        .caja {
-            width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
-            display: block; text-align: center;
-            font-family: 'Space Mono', monospace; color: inherit;
-        }
-        .caja:focus-visible { outline: none; }
-
-        /* EL HUECO del mueble: el agujero, que no se mueve. Por dentro
-           está oscuro y se le ve el fondo cuando el cajón sale. */
-        .caja-hueco {
-            position: relative; display: block;
-            aspect-ratio: 1 / 0.9;
-            border-radius: 3px;
-            perspective: 760px;
-            background: linear-gradient(180deg, #0d0805, #070403);
-            box-shadow:
-                inset 0 0 0 1px rgba(0,0,0,0.7),
-                inset 0 12px 22px rgba(0,0,0,0.85),
-                0 1px 0 rgba(255,214,170,0.1);
-        }
-
-        /* EL CAJÓN: sale hacia ti de verdad —translateZ con perspectiva— en
-           vez de deslizarse en plano: se acerca, se ve más grande y tapa su
-           hueco. Recorta lo que lleva dentro, así la funda no se sale. */
-        .caja-cajon {
-            position: absolute; inset: 0; overflow: hidden;
-            border-radius: 3px;
-            background: linear-gradient(180deg, #1b110a, #110a06);
-            transform: translate3d(0, 0, 0);
-            transition: transform 0.45s var(--ease-spring), box-shadow 0.45s ease;
-        }
-        .caja:hover .caja-cajon,
-        .caja:focus-visible .caja-cajon {
-            transform: translate3d(0, 7%, 30px);
-            box-shadow:
-                0 6px 12px rgba(0,0,0,0.45),
-                0 20px 34px rgba(0,0,0,0.45),
-                0 40px 56px rgba(0,0,0,0.4);
-        }
-        .caja:focus-visible .caja-cajon {
-            box-shadow:
-                0 0 0 3px var(--accent-color),
-                0 6px 12px rgba(0,0,0,0.45),
-                0 20px 34px rgba(0,0,0,0.45);
-        }
-        /* El que sale se pone delante de sus vecinos */
-        .indice-cajas li { position: relative; }
-        .indice-cajas li:hover, .indice-cajas li:focus-within { z-index: 5; }
-
-        /* Los discos de detrás, solo insinuados por el canto */
-        .caja-pila {
-            position: absolute; left: 12%; right: 12%; top: 5%; height: 40%;
-            background:
-                repeating-linear-gradient(180deg, rgba(244,241,236,0.1) 0 1px, transparent 1px 5px),
-                linear-gradient(180deg, #2c2119, #1a140f);
-            transform: rotate(-0.8deg);
-        }
-
-        /* La funda que asoma por encima del frente. Cuadrada, como un
-           vinilo. OJO: el cajón recorta, así que lo que sube al asomarse
-           tiene que caber en el margen de arriba (top). */
-        .caja-disco {
-            position: absolute; left: 50%; top: 7%; width: 66%; aspect-ratio: 1;
-            transform: translateX(-50%) rotate(-1.2deg);
-            background-color: #0b1714; background-size: cover; background-position: center;
-            box-shadow:
-                0 2px 4px rgba(0,0,0,0.5),
-                0 10px 18px rgba(0,0,0,0.45),
-                inset 0 0 0 1px rgba(244,241,236,0.17);
-            transition: transform 0.45s var(--ease-spring);
-        }
-        /* El brillo del plástico de la funda */
-        .caja-disco::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(118deg, rgba(255,255,255,0.16) 0 15%, transparent 42%);
-        }
-        .caja:hover .caja-disco,
-        .caja:focus-visible .caja-disco { transform: translateX(-50%) translateY(-6%) rotate(0deg); }
-
-        /* EL FRENTE del cajón: nogal con canto biselado, recto por arriba.
-           En él van el tarjetero y el tirador. */
-        .caja-frente {
-            position: absolute; left: 0; right: 0; bottom: 0; height: 46%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 9px; padding: 10px 12px 12px;
-            border-radius: 2px 2px 3px 3px;
-            background:
-                repeating-linear-gradient(92deg, rgba(0,0,0,0.07) 0 1px, transparent 1px 9px, rgba(255,214,170,0.04) 9px 10px, transparent 10px 17px),
-                linear-gradient(180deg, var(--nogal-claro) 0%, var(--nogal) 55%, #5a361f 100%);
-            box-shadow:
-                inset 0 2px 0 rgba(255, 220, 180, 0.28),
-                inset 2px 0 0 rgba(255, 220, 180, 0.1),
-                inset -2px 0 0 rgba(0,0,0,0.22),
-                inset 0 -3px 0 rgba(0,0,0,0.3),
-                0 -4px 10px rgba(0,0,0,0.55);
-            transition: filter 0.3s ease;
-        }
-        .caja:hover .caja-frente,
-        .caja:focus-visible .caja-frente { filter: brightness(1.07); }
-
-        /* EL TARJETERO de latón, con sus dos tornillos, y dentro la ficha */
-        .caja-etiqueta {
-            position: relative;
-            display: block; width: min(82%, 220px);
-            padding: 4px;
-            border-radius: 3px;
-            background: linear-gradient(180deg, #f1d896 0%, var(--laton) 35%, #b48d45 70%, var(--laton-oscuro) 100%);
-            box-shadow: 0 1px 0 rgba(255,240,200,0.35), 0 2px 4px rgba(0,0,0,0.45);
-        }
-        .caja-etiqueta::before,
-        .caja-etiqueta::after {
-            content: ''; position: absolute; top: 50%; width: 5px; height: 5px; margin-top: -2.5px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #fff2c9, #9a7432 70%);
-            box-shadow: 0 0 0 1px rgba(80,55,20,0.5);
-        }
-        .caja-etiqueta::before { left: -9px; }
-        .caja-etiqueta::after { right: -9px; }
-
-        .caja-ficha {
-            display: block;
-            padding: 7px 8px 6px;
-            border-radius: 1px;
-            background: var(--ficha);
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.28);
-            color: var(--tinta);
-        }
-
-        /* El nombre, escrito a máquina en la ficha. Viene en mayúsculas
-           en los datos; aquí se lee mejor como palabra normal */
-        .caja-nombre {
-            display: block;
-            font-size: clamp(0.92rem, 1.8vw, 1.18rem); font-weight: 700;
-            letter-spacing: 0.01em; line-height: 1.15;
+        .di-nombre {
+            display: inline-block;
+            font-family: 'Unbounded', 'Space Mono', sans-serif; font-weight: 700;
+            font-size: clamp(1.25rem, 2.1vw, 1.85rem); line-height: 1.1; letter-spacing: -0.01em;
             text-transform: lowercase;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-            transition: color 0.3s ease;
         }
-        .caja-nombre::first-letter { text-transform: uppercase; }
-        .caja-cuenta {
-            display: block; margin-top: 3px;
-            font-size: 0.66rem; line-height: 1.3; color: rgba(42, 28, 16, 0.62);
+        .di-nombre::first-letter { text-transform: uppercase; }
+        .di-cuenta { font-size: 0.78rem; color: rgba(243, 234, 215, 0.72); white-space: nowrap; }
+        .di-titulos {
+            grid-column: 2 / 4;
+            margin-top: 4px;
+            font-size: 0.72rem; line-height: 1.4; color: rgba(243, 234, 215, 0.55);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .caja:hover .caja-nombre,
-        .caja:focus-visible .caja-nombre { color: #8c2419; }
+        .di-pista.activa { transform: translateX(8px); }
+        .di-pista.activa .di-num { background: var(--color); box-shadow: none; color: #0d0d10; }
+        .di-pista.activa .di-titulos { color: rgba(243, 234, 215, 0.85); }
 
-        /* EL TIRADOR, de concha y del mismo latón */
-        .caja-tirador {
-            display: block; width: 34%; max-width: 74px; height: 9px;
-            border-radius: 0 0 40px 40px / 0 0 18px 18px;
-            background: linear-gradient(180deg, #f1d896 0%, var(--laton) 40%, var(--laton-oscuro) 100%);
-            box-shadow: 0 2px 3px rgba(0,0,0,0.5), inset 0 -2px 0 rgba(0,0,0,0.2);
+        /* El vinilo */
+        .di-vinilo { grid-area: vinilo; position: relative; align-self: center; }
+        .di-vinilo svg { display: block; width: 100%; height: auto; overflow: visible; }
+        .di-sombra { fill: rgba(5, 10, 50, 0.45); filter: blur(18px); }
+        .di-canto { fill: none; stroke: #2a2a30; stroke-width: 3; }
+        .di-liso { fill: none; stroke: #08080a; }
+        .di-anillo {
+            fill: none; stroke: var(--color); stroke-opacity: 0;
+            pointer-events: stroke; cursor: pointer;
+            transition: stroke-opacity 0.3s ease;
+        }
+        .di-anillo.activa { stroke-opacity: 0.5; }
+        .di-etiqueta { fill: var(--crema); }
+        .di-etiqueta-texto { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; letter-spacing: 3px; fill: #b3141c; }
+        .di-etiqueta-rpm { font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 30px; fill: #1d2fbf; }
+        .di-portada { opacity: 0; transition: opacity 0.35s ease; }
+        .di-portada.activa { opacity: 1; }
+        .di-agujero { fill: #1a2aa8; stroke: #c9c1ad; stroke-width: 2; }
+        .di-reflejo { pointer-events: none; }
+
+        .di-gira { transform-origin: 560px 560px; }
+        .di-vinilo.sonando .di-gira { animation: diGira 6s linear infinite; }
+        @keyframes diGira { to { transform: rotate(360deg); } }
+
+        .di-brazo {
+            transform-origin: 1010px 120px;
+            transform: rotate(var(--angulo));
+            transition: transform 0.7s cubic-bezier(0.35, 1.3, 0.5, 1);
+            filter: drop-shadow(10px 18px 10px rgba(5, 10, 50, 0.45));
+        }
+        .di-brazo-tubo { fill: none; stroke: #e7e9ec; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+        .di-capsula { fill: #0d0d10; stroke: #e7e9ec; stroke-width: 3; }
+        .di-contrapeso { fill: #c9ccd1; stroke: #8a8f96; stroke-width: 2; }
+        .di-pivote { fill: #c9ccd1; stroke: #8a8f96; stroke-width: 3; filter: drop-shadow(6px 10px 8px rgba(5, 10, 50, 0.45)); }
+        .di-pivote-centro { fill: #0d0d10; }
+
+        @media (max-width: 760px) {
+            .disco-indice {
+                grid-template-columns: minmax(0, 1fr);
+                grid-template-areas: "cabecera" "vinilo" "lista";
+                grid-template-rows: auto;
+            }
+            .di-cabecera { padding-top: 6px; }
+            .di-titulo { font-size: 2.5rem; }
+            .di-ayuda { margin-bottom: 8px; }
+            .di-vinilo { width: min(100%, 420px); margin: 0 auto 6px; }
+            .di-pista { padding: 10px 2px 9px; }
+            .di-nombre { font-size: 1.15rem; }
+            .indice-panel { padding-bottom: 64px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .di-vinilo.sonando .di-gira { animation: none; }
+            .di-brazo, .di-pista, .di-portada, .di-anillo { transition: none; }
         }
 
         .indice-cerrar {
-            font-family: 'Space Mono', monospace; font-size: 0.82rem; font-weight: 700;
+            margin: 28px 0 0;
+            font-family: 'Unbounded', 'Space Mono', sans-serif; font-size: 0.8rem; font-weight: 500;
             letter-spacing: 0.02em;
-            color: var(--text-color); background: none;
-            border: 1px solid rgba(244, 241, 236, 0.3); border-radius: 999px;
+            color: var(--crema); background: none;
+            border: 1px solid rgba(243, 234, 215, 0.5); border-radius: 999px;
             padding: 12px 26px; cursor: pointer; transition: background-color 0.3s, color 0.3s;
         }
-        .indice-cerrar:hover, .indice-cerrar:focus-visible { background: var(--text-color); color: #08110e; }
+        .indice-cerrar:hover, .indice-cerrar:focus-visible { background: var(--crema); color: var(--campo); }
 
         /* Al saltar de caja el viaje no se ve: está tapado por el índice */
         .stations-track.sin-viaje { transition: none; }
@@ -908,19 +847,6 @@ const T = textos[idioma];
             .btn-volver { white-space: nowrap; }
             /* Arriba manda el volver a casa: el índice empieza por debajo */
             .indice { align-items: flex-start; padding: 52px 14px 18px; }
-            .indice-cajas { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .mueble { padding: 10px; margin-bottom: 46px; }
-            .caja-frente { gap: 6px; padding: 7px 7px 8px; }
-            .caja-etiqueta { width: 90%; padding: 3px; }
-            .caja-etiqueta::before, .caja-etiqueta::after { display: none; }
-            .caja-ficha { padding: 5px 5px 5px; }
-            .caja-nombre { font-size: 0.9rem; }
-            .caja-cuenta { font-size: 0.6rem; }
-            .caja-tirador { height: 7px; }
-            .indice-cabecera h2 { font-size: 1.7rem; }
-            .indice-cabecera p { margin-bottom: 24px; font-size: 0.8rem; }
-            .caja:hover .caja-disco, .caja:focus-visible .caja-disco { transform: translateX(-50%) rotate(-1.2deg); }
-            .caja:hover .caja-cajon, .caja:focus-visible .caja-cajon { transform: translate3d(0, 0, 0); }
 
             /* Arriba no cabe con el indicador: baja al centro, justo encima
                de las flechas para no pisarlas */
@@ -964,9 +890,6 @@ const T = textos[idioma];
         }
 
         @media (prefers-reduced-motion: reduce) {
-        .caja-cajon, .caja-disco { transition: none; }
-        .caja:hover .caja-cajon, .caja:focus-visible .caja-cajon { transform: translate3d(0, 0, 0); }
-        .caja:hover .caja-disco, .caja:focus-visible .caja-disco { transform: translateX(-50%) rotate(-1.2deg); }
             .fondo--airbnb::after { animation: none; }
             .fondo { transition: none; }
         }
@@ -1003,42 +926,89 @@ const T = textos[idioma];
             </div>
         </div>
 
-        <!-- EL ÍNDICE: las cajas del archivo -->
+        <!-- EL ÍNDICE: el disco del archivo -->
         <div class="indice is-open" id="indice" role="dialog" aria-modal="true" aria-labelledby="indice-titulo">
             <div class="indice-panel">
-                <div class="indice-cabecera">
-                    <h2 id="indice-titulo">{T.portfolio.indiceTitulo}</h2>
-                    <p>{T.portfolio.indiceAyuda}</p>
-                </div>
+                <div class="disco-indice">
+                    <header class="di-cabecera">
+                        <h2 class="di-titulo" id="indice-titulo">{T.portfolio.indiceTitulo}</h2>
+                        <p class="di-ayuda">{T.portfolio.indiceAyuda}</p>
+                    </header>
 
-                <div class="mueble">
-                    <ul class="indice-cajas">
+                    <ol class="di-lista">
                         {estaciones.map((est, i) => {
-                            const discos = est.izquierda.length + est.derecha.length;
-                            const portada = (est.izquierda[0] ?? est.derecha[0]).portada;
+                            const discos = discosDe(est);
                             return (
                                 <li>
-                                    <button type="button" class="caja" data-ir={i}>
-                                        <span class="caja-hueco">
-                                            <span class="caja-cajon">
-                                                <span class="caja-pila" aria-hidden="true"></span>
-                                                <span class="caja-disco" style={`background-image: url('${portada}')`}></span>
-                                                <span class="caja-frente">
-                                                    <span class="caja-etiqueta">
-                                                        <span class="caja-ficha">
-                                                            <span class="caja-nombre">{t(est.nombre, idioma)}</span>
-                                                            <span class="caja-cuenta">{discos} {discos === 1 ? T.portfolio.disco : T.portfolio.discos}</span>
-                                                        </span>
-                                                    </span>
-                                                    <span class="caja-tirador" aria-hidden="true"></span>
-                                                </span>
-                                            </span>
-                                        </span>
+                                    <button type="button" class="di-pista" data-ir={i} data-pista={i}
+                                            style={`--color: ${colorCaja[est.tema] ?? '#f3ead7'}`}>
+                                        <span class="di-num" aria-hidden="true">{i + 1}</span>
+                                        <span class="di-nombre">{t(est.nombre, idioma)}</span>
+                                        <span class="di-cuenta">{cuantos(discos.length)}</span>
+                                        <span class="di-titulos">{discos.map((d) => t(d.titulo, idioma)).join(', ')}</span>
                                     </button>
                                 </li>
                             );
                         })}
-                    </ul>
+                    </ol>
+
+                    <div class="di-vinilo" data-angulos={angulos.join(',')} data-reposo={anguloReposo}
+                         style={`--angulo: ${anguloReposo}deg`} aria-hidden="true">
+                        <svg viewBox="0 0 1200 1120" role="presentation">
+                            <defs>
+                                <radialGradient id="di-surcos" gradientUnits="userSpaceOnUse" cx={DC.x} cy={DC.y} r="5" spreadMethod="repeat">
+                                    <stop offset="0" stop-color="#0d0d10" />
+                                    <stop offset="0.55" stop-color="#1b1b20" />
+                                    <stop offset="1" stop-color="#0d0d10" />
+                                </radialGradient>
+                                <linearGradient id="di-brillo" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0.18" stop-color="#fff" stop-opacity="0" />
+                                    <stop offset="0.3" stop-color="#fff" stop-opacity="0.13" />
+                                    <stop offset="0.42" stop-color="#fff" stop-opacity="0" />
+                                    <stop offset="0.6" stop-color="#fff" stop-opacity="0" />
+                                    <stop offset="0.72" stop-color="#fff" stop-opacity="0.08" />
+                                    <stop offset="0.84" stop-color="#fff" stop-opacity="0" />
+                                </linearGradient>
+                                <clipPath id="di-recorte-etiqueta"><circle cx={DC.x} cy={DC.y} r={rEtiqueta - 6} /></clipPath>
+                                <path id="di-curva" d={`M ${DC.x - rEtiqueta + 34},${DC.y} A ${rEtiqueta - 34} ${rEtiqueta - 34} 0 0 1 ${DC.x + rEtiqueta - 34},${DC.y}`} />
+                            </defs>
+
+                            <circle class="di-sombra" cx={DC.x + 14} cy={DC.y + 26} r={R} />
+                            <g class="di-gira">
+                                <circle cx={DC.x} cy={DC.y} r={R} fill="url(#di-surcos)" />
+                                <circle cx={DC.x} cy={DC.y} r={R} class="di-canto" />
+                                {pistas.map((p, i) => (
+                                    <circle class="di-anillo" cx={DC.x} cy={DC.y} r={p.r} stroke-width={p.ancho}
+                                            data-ir={i} data-pista={i} style={`--color: ${colorCaja[estaciones[i].tema] ?? '#f3ead7'}`} />
+                                ))}
+                                {pistas.slice(1).map((p) => (
+                                    <circle class="di-liso" cx={DC.x} cy={DC.y} r={p.r + p.ancho / 2 + hueco / 2} stroke-width={hueco} />
+                                ))}
+                                <circle cx={DC.x} cy={DC.y} r={rEtiqueta + 10} class="di-liso" stroke-width="20" />
+                                <circle cx={DC.x} cy={DC.y} r={rEtiqueta} class="di-etiqueta" />
+                                <text class="di-etiqueta-texto"><textPath href="#di-curva" startOffset="50%" text-anchor="middle">CASITA MANOLO · MADRID — NYC</textPath></text>
+                                <text class="di-etiqueta-rpm" x={DC.x} y={DC.y + rEtiqueta * 0.62} text-anchor="middle">33⅓</text>
+                                <g clip-path="url(#di-recorte-etiqueta)">
+                                    {estaciones.map((est, i) => (
+                                        <image class="di-portada" data-portada={i} href={discosDe(est)[0].portada}
+                                               x={DC.x - rEtiqueta} y={DC.y - rEtiqueta} width={rEtiqueta * 2} height={rEtiqueta * 2}
+                                               preserveAspectRatio="xMidYMid slice" />
+                                    ))}
+                                </g>
+                                <circle cx={DC.x} cy={DC.y} r="11" class="di-agujero" />
+                            </g>
+                            <circle cx={DC.x} cy={DC.y} r={R} fill="url(#di-brillo)" class="di-reflejo" />
+
+                            <!-- El brazo: dibujado hacia la derecha desde el pivote y girado -->
+                            <g class="di-brazo">
+                                <path class="di-brazo-tubo" d={`M ${pivote.x} ${pivote.y} L ${pivote.x + largoBrazo - 70} ${pivote.y} L ${pivote.x + largoBrazo - 30} ${pivote.y + 14}`} />
+                                <rect class="di-capsula" x={pivote.x + largoBrazo - 44} y={pivote.y + 2} width="48" height="26" rx="4" transform={`rotate(20 ${pivote.x + largoBrazo - 20} ${pivote.y + 14})`} />
+                                <rect class="di-contrapeso" x={pivote.x - 86} y={pivote.y - 17} width="58" height="34" rx="6" />
+                            </g>
+                            <circle class="di-pivote" cx={pivote.x} cy={pivote.y} r="34" />
+                            <circle class="di-pivote-centro" cx={pivote.x} cy={pivote.y} r="12" />
+                        </svg>
+                    </div>
                 </div>
 
                 <button type="button" class="indice-cerrar" id="indice-cerrar">{T.portfolio.indiceCerrar}</button>
@@ -1161,7 +1131,8 @@ const T = textos[idioma];
                 indice?.removeAttribute('inert');
                 indice?.classList.add('is-open');
                 document.body.classList.add('indice-abierto');
-                (indice?.querySelector('.caja') as HTMLElement | null)?.focus();
+                const primero = [...(indice?.querySelectorAll<HTMLElement>('[data-ir]') ?? [])].find((el) => el.offsetParent !== null);
+                primero?.focus();
             };
             const cerrarIndice = () => {
                 indice?.classList.remove('is-open');
@@ -1191,6 +1162,32 @@ const T = textos[idioma];
                     cerrarIndice();
                 }, { signal: limpieza.signal });
             });
+            // Propuesta C: al señalar una pista (en la lista o en el disco) el
+            // brazo baja hasta ella, la etiqueta enseña su carátula y gira
+            const vinilo = indice?.querySelector<HTMLElement>('.di-vinilo');
+            if (vinilo) {
+                const angulos = (vinilo.dataset.angulos ?? '').split(',').map(Number);
+                const reposo = Number(vinilo.dataset.reposo);
+                const piezas = [...indice!.querySelectorAll<HTMLElement | SVGElement>('[data-pista], [data-portada]')];
+                let suelta = 0;
+                const activar = (i: number | null) => {
+                    clearTimeout(suelta);
+                    piezas.forEach((el) => {
+                        const n = Number((el as HTMLElement).dataset.pista ?? (el as HTMLElement).dataset.portada);
+                        el.classList.toggle('activa', n === i);
+                    });
+                    vinilo.classList.toggle('sonando', i !== null);
+                    vinilo.style.setProperty('--angulo', `${i === null ? reposo : angulos[i]}deg`);
+                };
+                indice!.querySelectorAll<HTMLElement | SVGElement>('[data-pista]').forEach((el) => {
+                    const i = Number((el as HTMLElement).dataset.pista);
+                    el.addEventListener('pointerenter', () => activar(i), { signal: limpieza.signal });
+                    el.addEventListener('focus', () => activar(i), { signal: limpieza.signal });
+                    el.addEventListener('pointerleave', () => { suelta = window.setTimeout(() => activar(null), 160); }, { signal: limpieza.signal });
+                    el.addEventListener('blur', () => activar(null), { signal: limpieza.signal });
+                });
+            }
+
             updateCarousel();
 
             // --- VINILOS ---

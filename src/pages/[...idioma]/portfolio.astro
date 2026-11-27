@@ -38,6 +38,41 @@ const letras = 'ABCDEFGHIJKL';
 // La tienda reparte las secciones en dos baldas
 const mitad = Math.ceil(estaciones.length / 2);
 const baldas = [estaciones.slice(0, mitad), estaciones.slice(mitad)];
+
+// Propuesta C: el disco. Cada tipo de trabajo es una pista del vinilo, de
+// fuera adentro como en un LP; su ancho depende de cuántos discos guarda,
+// con un mínimo para que todas se puedan señalar.
+const DC = { x: 560, y: 560 };            // centro del disco en el SVG (0 0 1200 1120)
+const R = 500;                            // radio del vinilo
+const rEtiqueta = 0.34 * R;
+const rSurco = 0.965 * R;
+const hueco = 7;                          // la franja lisa entre pista y pista
+const totalDiscos = estaciones.reduce((n, e) => n + discosDe(e).length, 0);
+const anchoMin = 0.055 * R;
+const reparto = rSurco - rEtiqueta - anchoMin * estaciones.length - hueco * (estaciones.length - 1);
+let bordePista = rSurco;
+const pistas = estaciones.map((est) => {
+    const ancho = anchoMin + reparto * (discosDe(est).length / totalDiscos);
+    const r = bordePista - ancho / 2;
+    bordePista -= ancho + hueco;
+    return { r, ancho };
+});
+// El brazo gira sobre un pivote fuera del disco, arriba a la derecha. Para
+// cada pista, el ángulo que deja la aguja justo encima de ella.
+const pivote = { x: DC.x + 0.9 * R, y: DC.y - 0.88 * R };
+const largoBrazo = 0.98 * R;
+const anguloPara = (radio: number) => {
+    let mejor = 0, error = Infinity;
+    for (let a = 30; a <= 150; a += 0.25) {
+        const x = pivote.x + largoBrazo * Math.cos((a * Math.PI) / 180) - DC.x;
+        const y = pivote.y + largoBrazo * Math.sin((a * Math.PI) / 180) - DC.y;
+        const e = Math.abs(Math.hypot(x, y) - radio);
+        if (e < error) { error = e; mejor = a; }
+    }
+    return mejor;
+};
+const anguloReposo = anguloPara(1.1 * R);
+const angulos = pistas.map((p) => anguloPara(p.r));
 ---
 
 <!DOCTYPE html>
@@ -54,9 +89,10 @@ const baldas = [estaciones.slice(0, mitad), estaciones.slice(mitad)];
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
     <Temas />
     <ClientRouter />
-    <!-- PRUEBAS: ?indice=a (gramola) · ?indice=b (tienda) · ?indice=actual -->
+    <!-- PRUEBAS: ?indice=c (el disco) · ?indice=a (gramola) · ?indice=b (tienda) · ?indice=actual -->
     <script is:inline>
         (function () {
             var p = new URL(location.href).searchParams.get('indice');
@@ -64,7 +100,7 @@ const baldas = [estaciones.slice(0, mitad), estaciones.slice(mitad)];
                 if (p) sessionStorage.setItem('casita-indice', p);
                 p = sessionStorage.getItem('casita-indice') || p;
             } catch (e) {}
-            document.documentElement.setAttribute('data-indice', p === 'b' || p === 'actual' ? p : 'a');
+            document.documentElement.setAttribute('data-indice', p === 'a' || p === 'b' || p === 'actual' ? p : 'c');
         })();
     </script>
 
@@ -369,10 +405,147 @@ const baldas = [estaciones.slice(0, mitad), estaciones.slice(mitad)];
            PRUEBAS: qué propuesta del índice se ve (?indice=a|b|actual)
            ======================================================== */
         html:not([data-indice="actual"]) .mueble { display: none; }
+        html:not([data-indice="a"]) .gramola { display: none; }
         html:not([data-indice="b"]) .tienda { display: none; }
-        html[data-indice="b"] .gramola,
-        html[data-indice="actual"] .gramola { display: none; }
+        html:not([data-indice="c"]) .disco-indice { display: none; }
         html[data-indice="b"] .indice-panel { width: min(1060px, 100%); }
+
+        /* ========================================================
+           PROPUESTA C · EL DISCO
+           Aquí la casa se queda fuera: un campo de azul ultramar, un
+           vinilo negro enorme y tipografía ancha. El índice es el propio
+           disco: cada tipo de trabajo es una pista, de fuera adentro, y
+           su ancho dice cuánto guarda. Al lado, la lista de pistas como en
+           la contraportada. Al señalar una, el brazo baja hasta su surco,
+           la etiqueta enseña su carátula y el disco gira.
+           ======================================================== */
+        html[data-indice="c"] #indice {
+            --campo: #1d2fbf;
+            --crema: #f3ead7;
+            background:
+                radial-gradient(ellipse 70% 80% at 72% 50%, #2b41e6 0%, transparent 70%),
+                linear-gradient(160deg, #1f33c9 0%, #1a2aa8 55%, #121d78 100%);
+            backdrop-filter: none;
+        }
+        html[data-indice="c"] .indice-panel { width: min(1260px, 100%); text-align: left; }
+        html[data-indice="c"] .indice-cabecera { display: none; }
+
+        .disco-indice {
+            display: grid;
+            grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr);
+            grid-template-areas: "cabecera vinilo" "lista vinilo";
+            grid-template-rows: auto 1fr;
+            column-gap: clamp(28px, 4vw, 72px);
+            align-items: start;
+            color: var(--crema);
+        }
+
+        .di-cabecera { grid-area: cabecera; padding-top: clamp(8px, 4vh, 48px); }
+        .di-titulo {
+            margin: 0 0 14px;
+            font-family: 'Unbounded', 'Space Mono', sans-serif; font-weight: 800;
+            font-size: clamp(2.6rem, 5.6vw, 5.2rem); line-height: 0.92; letter-spacing: -0.03em;
+            color: var(--crema);
+        }
+        .di-ayuda {
+            max-width: 26em; margin: 0 0 clamp(20px, 4vh, 40px);
+            font-size: 0.86rem; line-height: 1.55; color: rgba(243, 234, 215, 0.72);
+        }
+
+        .di-lista { grid-area: lista; list-style: none; margin: 0; padding: 0; counter-reset: none; }
+        .di-lista li + li .di-pista { border-top: 1px solid rgba(243, 234, 215, 0.2); }
+        .di-pista {
+            display: grid; grid-template-columns: 2.4em minmax(0, 1fr) auto; column-gap: 12px; align-items: baseline;
+            width: 100%; padding: 13px 4px 12px; border: 0; background: none; cursor: pointer;
+            text-align: left; color: var(--crema); font-family: 'Space Mono', monospace;
+            transition: transform 0.3s var(--ease-spring);
+        }
+        .di-pista:focus-visible { outline: 2px solid var(--crema); outline-offset: 2px; border-radius: 2px; }
+        .di-num {
+            align-self: center;
+            display: grid; place-items: center; width: 1.9em; height: 1.9em; border-radius: 50%;
+            font-size: 0.78rem; font-weight: 700;
+            box-shadow: inset 0 0 0 1.5px rgba(243, 234, 215, 0.55);
+            transition: background-color 0.25s ease, box-shadow 0.25s ease, color 0.25s ease;
+        }
+        .di-nombre {
+            display: inline-block;
+            font-family: 'Unbounded', 'Space Mono', sans-serif; font-weight: 700;
+            font-size: clamp(1.25rem, 2.1vw, 1.85rem); line-height: 1.1; letter-spacing: -0.01em;
+            text-transform: lowercase;
+        }
+        .di-nombre::first-letter { text-transform: uppercase; }
+        .di-cuenta { font-size: 0.78rem; color: rgba(243, 234, 215, 0.72); white-space: nowrap; }
+        .di-titulos {
+            grid-column: 2 / 4;
+            margin-top: 4px;
+            font-size: 0.72rem; line-height: 1.4; color: rgba(243, 234, 215, 0.55);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .di-pista.activa { transform: translateX(8px); }
+        .di-pista.activa .di-num { background: var(--color); box-shadow: none; color: #0d0d10; }
+        .di-pista.activa .di-titulos { color: rgba(243, 234, 215, 0.85); }
+
+        /* El vinilo */
+        .di-vinilo { grid-area: vinilo; position: relative; align-self: center; }
+        .di-vinilo svg { display: block; width: 100%; height: auto; overflow: visible; }
+        .di-sombra { fill: rgba(5, 10, 50, 0.45); filter: blur(18px); }
+        .di-canto { fill: none; stroke: #2a2a30; stroke-width: 3; }
+        .di-liso { fill: none; stroke: #08080a; }
+        .di-anillo {
+            fill: none; stroke: var(--color); stroke-opacity: 0;
+            pointer-events: stroke; cursor: pointer;
+            transition: stroke-opacity 0.3s ease;
+        }
+        .di-anillo.activa { stroke-opacity: 0.5; }
+        .di-etiqueta { fill: var(--crema); }
+        .di-etiqueta-texto { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; letter-spacing: 3px; fill: #b3141c; }
+        .di-etiqueta-rpm { font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 30px; fill: #1d2fbf; }
+        .di-portada { opacity: 0; transition: opacity 0.35s ease; }
+        .di-portada.activa { opacity: 1; }
+        .di-agujero { fill: #1a2aa8; stroke: #c9c1ad; stroke-width: 2; }
+        .di-reflejo { pointer-events: none; }
+
+        .di-gira { transform-origin: 560px 560px; }
+        .di-vinilo.sonando .di-gira { animation: diGira 6s linear infinite; }
+        @keyframes diGira { to { transform: rotate(360deg); } }
+
+        .di-brazo {
+            transform-origin: 1010px 120px;
+            transform: rotate(var(--angulo));
+            transition: transform 0.7s cubic-bezier(0.35, 1.3, 0.5, 1);
+            filter: drop-shadow(10px 18px 10px rgba(5, 10, 50, 0.45));
+        }
+        .di-brazo-tubo { fill: none; stroke: #e7e9ec; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+        .di-capsula { fill: #0d0d10; stroke: #e7e9ec; stroke-width: 3; }
+        .di-contrapeso { fill: #c9ccd1; stroke: #8a8f96; stroke-width: 2; }
+        .di-pivote { fill: #c9ccd1; stroke: #8a8f96; stroke-width: 3; filter: drop-shadow(6px 10px 8px rgba(5, 10, 50, 0.45)); }
+        .di-pivote-centro { fill: #0d0d10; }
+
+        html[data-indice="c"] .indice-cerrar {
+            margin: 28px 0 0;
+            font-family: 'Unbounded', 'Space Mono', sans-serif; font-weight: 500; font-size: 0.8rem;
+            color: var(--crema); border-color: rgba(243, 234, 215, 0.5);
+        }
+
+        @media (max-width: 760px) {
+            .disco-indice {
+                grid-template-columns: minmax(0, 1fr);
+                grid-template-areas: "cabecera" "vinilo" "lista";
+                grid-template-rows: auto;
+            }
+            .di-cabecera { padding-top: 6px; }
+            .di-titulo { font-size: 2.5rem; }
+            .di-ayuda { margin-bottom: 8px; }
+            .di-vinilo { width: min(100%, 420px); margin: 0 auto 6px; }
+            .di-pista { padding: 10px 2px 9px; }
+            .di-nombre { font-size: 1.15rem; }
+            html[data-indice="c"] .indice-panel { padding-bottom: 64px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .di-vinilo.sonando .di-gira { animation: none; }
+            .di-brazo, .di-pista, .di-portada, .di-anillo { transition: none; }
+        }
 
         /* ========================================================
            PROPUESTA A · LA GRAMOLA
@@ -1345,6 +1518,89 @@ const baldas = [estaciones.slice(0, mitad), estaciones.slice(mitad)];
                     </ul>
                 </div>
 
+                <!-- PROPUESTA C: EL DISCO -->
+                <div class="disco-indice">
+                    <header class="di-cabecera">
+                        <h2 class="di-titulo">{T.portfolio.indiceTitulo}</h2>
+                        <p class="di-ayuda">{T.portfolio.indiceAyudaDisco}</p>
+                    </header>
+
+                    <ol class="di-lista">
+                        {estaciones.map((est, i) => {
+                            const discos = discosDe(est);
+                            return (
+                                <li>
+                                    <button type="button" class="di-pista" data-ir={i} data-pista={i}
+                                            style={`--color: ${colorCaja[est.tema] ?? '#f3ead7'}`}>
+                                        <span class="di-num" aria-hidden="true">{i + 1}</span>
+                                        <span class="di-nombre">{t(est.nombre, idioma)}</span>
+                                        <span class="di-cuenta">{cuantos(discos.length)}</span>
+                                        <span class="di-titulos">{discos.map((d) => t(d.titulo, idioma)).join(', ')}</span>
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ol>
+
+                    <div class="di-vinilo" data-angulos={angulos.join(',')} data-reposo={anguloReposo}
+                         style={`--angulo: ${anguloReposo}deg`} aria-hidden="true">
+                        <svg viewBox="0 0 1200 1120" role="presentation">
+                            <defs>
+                                <radialGradient id="di-surcos" gradientUnits="userSpaceOnUse" cx={DC.x} cy={DC.y} r="5" spreadMethod="repeat">
+                                    <stop offset="0" stop-color="#0d0d10" />
+                                    <stop offset="0.55" stop-color="#1b1b20" />
+                                    <stop offset="1" stop-color="#0d0d10" />
+                                </radialGradient>
+                                <linearGradient id="di-brillo" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0.18" stop-color="#fff" stop-opacity="0" />
+                                    <stop offset="0.3" stop-color="#fff" stop-opacity="0.13" />
+                                    <stop offset="0.42" stop-color="#fff" stop-opacity="0" />
+                                    <stop offset="0.6" stop-color="#fff" stop-opacity="0" />
+                                    <stop offset="0.72" stop-color="#fff" stop-opacity="0.08" />
+                                    <stop offset="0.84" stop-color="#fff" stop-opacity="0" />
+                                </linearGradient>
+                                <clipPath id="di-recorte-etiqueta"><circle cx={DC.x} cy={DC.y} r={rEtiqueta - 6} /></clipPath>
+                                <path id="di-curva" d={`M ${DC.x - rEtiqueta + 34},${DC.y} A ${rEtiqueta - 34} ${rEtiqueta - 34} 0 0 1 ${DC.x + rEtiqueta - 34},${DC.y}`} />
+                            </defs>
+
+                            <circle class="di-sombra" cx={DC.x + 14} cy={DC.y + 26} r={R} />
+                            <g class="di-gira">
+                                <circle cx={DC.x} cy={DC.y} r={R} fill="url(#di-surcos)" />
+                                <circle cx={DC.x} cy={DC.y} r={R} class="di-canto" />
+                                {pistas.map((p, i) => (
+                                    <circle class="di-anillo" cx={DC.x} cy={DC.y} r={p.r} stroke-width={p.ancho}
+                                            data-ir={i} data-pista={i} style={`--color: ${colorCaja[estaciones[i].tema] ?? '#f3ead7'}`} />
+                                ))}
+                                {pistas.slice(1).map((p) => (
+                                    <circle class="di-liso" cx={DC.x} cy={DC.y} r={p.r + p.ancho / 2 + hueco / 2} stroke-width={hueco} />
+                                ))}
+                                <circle cx={DC.x} cy={DC.y} r={rEtiqueta + 10} class="di-liso" stroke-width="20" />
+                                <circle cx={DC.x} cy={DC.y} r={rEtiqueta} class="di-etiqueta" />
+                                <text class="di-etiqueta-texto"><textPath href="#di-curva" startOffset="50%" text-anchor="middle">CASITA MANOLO · MADRID — NYC</textPath></text>
+                                <text class="di-etiqueta-rpm" x={DC.x} y={DC.y + rEtiqueta * 0.62} text-anchor="middle">33⅓</text>
+                                <g clip-path="url(#di-recorte-etiqueta)">
+                                    {estaciones.map((est, i) => (
+                                        <image class="di-portada" data-portada={i} href={discosDe(est)[0].portada}
+                                               x={DC.x - rEtiqueta} y={DC.y - rEtiqueta} width={rEtiqueta * 2} height={rEtiqueta * 2}
+                                               preserveAspectRatio="xMidYMid slice" />
+                                    ))}
+                                </g>
+                                <circle cx={DC.x} cy={DC.y} r="11" class="di-agujero" />
+                            </g>
+                            <circle cx={DC.x} cy={DC.y} r={R} fill="url(#di-brillo)" class="di-reflejo" />
+
+                            <!-- El brazo: dibujado hacia la derecha desde el pivote y girado -->
+                            <g class="di-brazo">
+                                <path class="di-brazo-tubo" d={`M ${pivote.x} ${pivote.y} L ${pivote.x + largoBrazo - 70} ${pivote.y} L ${pivote.x + largoBrazo - 30} ${pivote.y + 14}`} />
+                                <rect class="di-capsula" x={pivote.x + largoBrazo - 44} y={pivote.y + 2} width="48" height="26" rx="4" transform={`rotate(20 ${pivote.x + largoBrazo - 20} ${pivote.y + 14})`} />
+                                <rect class="di-contrapeso" x={pivote.x - 86} y={pivote.y - 17} width="58" height="34" rx="6" />
+                            </g>
+                            <circle class="di-pivote" cx={pivote.x} cy={pivote.y} r="34" />
+                            <circle class="di-pivote-centro" cx={pivote.x} cy={pivote.y} r="12" />
+                        </svg>
+                    </div>
+                </div>
+
                 <!-- PROPUESTA A: LA GRAMOLA -->
                 <div class="gramola">
                     <div class="gramola-cristal">
@@ -1560,6 +1816,32 @@ const baldas = [estaciones.slice(0, mitad), estaciones.slice(mitad)];
                     cerrarIndice();
                 }, { signal: limpieza.signal });
             });
+            // Propuesta C: al señalar una pista (en la lista o en el disco) el
+            // brazo baja hasta ella, la etiqueta enseña su carátula y gira
+            const vinilo = indice?.querySelector<HTMLElement>('.di-vinilo');
+            if (vinilo) {
+                const angulos = (vinilo.dataset.angulos ?? '').split(',').map(Number);
+                const reposo = Number(vinilo.dataset.reposo);
+                const piezas = [...indice!.querySelectorAll<HTMLElement | SVGElement>('[data-pista], [data-portada]')];
+                let suelta = 0;
+                const activar = (i: number | null) => {
+                    clearTimeout(suelta);
+                    piezas.forEach((el) => {
+                        const n = Number((el as HTMLElement).dataset.pista ?? (el as HTMLElement).dataset.portada);
+                        el.classList.toggle('activa', n === i);
+                    });
+                    vinilo.classList.toggle('sonando', i !== null);
+                    vinilo.style.setProperty('--angulo', `${i === null ? reposo : angulos[i]}deg`);
+                };
+                indice!.querySelectorAll<HTMLElement | SVGElement>('[data-pista]').forEach((el) => {
+                    const i = Number((el as HTMLElement).dataset.pista);
+                    el.addEventListener('pointerenter', () => activar(i), { signal: limpieza.signal });
+                    el.addEventListener('focus', () => activar(i), { signal: limpieza.signal });
+                    el.addEventListener('pointerleave', () => { suelta = window.setTimeout(() => activar(null), 160); }, { signal: limpieza.signal });
+                    el.addEventListener('blur', () => activar(null), { signal: limpieza.signal });
+                });
+            }
+
             updateCarousel();
 
             // --- VINILOS ---
